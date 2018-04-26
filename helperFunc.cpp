@@ -15,7 +15,10 @@
  *    See planterMain.ino
  */
 
-#include "helperfunc.h" 
+#include "helperfunc.h"
+
+#include <ESP8266WiFi.h>
+#include <WiFiClientSecure.h>
 
 void saveData() {
   ESP.rtcUserMemoryWrite((uint32_t)RTCMemOffset, (uint32_t*) &sleepMemory, sizeof(sleepMemory));
@@ -93,6 +96,86 @@ void getConfiguration() {
                 "\"temperature\":\"100\", "
                 "\"light\":\"110\", "
                 "\"moisture\":\"38\"}";
+  
+  const char* host = "web.cecs.pdx.edu";
+  const int httpsPort = 443;
+
+  // Use web browser to view and copy
+  // SHA1 fingerprint of the certificate
+  const char* fingerprint = "UPDATE_ME";
+
+  // Use WiFiClientSecure class to create TLS connection
+  WiFiClientSecure client;
+  if (!client.connect(host, httpsPort)) {
+    Serial.println("connection failed");
+    return;
+  }
+
+  if (client.verify(fingerprint, host)) {
+    Serial.println("certificate matches");
+  } else {
+    Serial.println("certificate doesn't match");
+    return;
+  }
+
+  String url = "/~jsa3/smartplanter/api/sync/?resource=";
+  url.concat(planterResourceID);
+
+  client.print(String("GET ") + url + " HTTP/1.1\r\n" +
+               "Host: " + host + "\r\n" +
+               "Authorization: Bearer \r\n" +
+               "Connection: close\r\n\r\n");
+
+  while (client.connected()) {
+    String line = client.readStringUntil('\n');
+    if (line == "\r") {
+      Serial.println("headers received");
+      break;
+    }
+  }
+  String line = client.readStringUntil('\n');
+  if (line.startsWith("{")) {
+    Serial.println("esp8266/Arduino CI successfull!");
+  } else {
+    Serial.println("esp8266/Arduino CI has failed");
+  }
+  // TODO Fix this
+  // Send HTTP request
+  client.println(F("GET /example.json HTTP/1.0"));
+  client.println(F("Host: arduinojson.org"));
+  client.println(F("Connection: close"));
+  if (client.println() == 0) {
+    Serial.println(F("Failed to send request"));
+    return;
+  }
+
+  // Check HTTP status
+  char status[32] = {0};
+  client.readBytesUntil('\r', status, sizeof(status));
+  if (strcmp(status, "HTTP/1.1 200 OK") != 0) {
+    Serial.print(F("Unexpected response: "));
+    Serial.println(status);
+    return;
+  }
+
+  // Skip HTTP headers
+  char endOfHeaders[] = "\r\n\r\n";
+  if (!client.find(endOfHeaders)) {
+    Serial.println(F("Invalid response"));
+    return;
+  }
+
+  // Allocate JsonBuffer
+  // Use arduinojson.org/assistant to compute the capacity.
+  const size_t capacity = JSON_OBJECT_SIZE(3) + JSON_ARRAY_SIZE(2) + 60;
+  DynamicJsonBuffer jsonBuffer(capacity);
+
+  // Parse JSON object
+  JsonObject& root = jsonBuffer.parseObject(client);
+  if (!root.success()) {
+    Serial.println(F("Parsing failed!"));
+    return;
+  }
                 
   // Root of the object tree.
   //
