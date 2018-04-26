@@ -123,57 +123,12 @@ void getConfiguration() {
 
   client.print(String("GET ") + url + " HTTP/1.1\r\n" +
                "Host: " + host + "\r\n" +
-               "Authorization: Bearer \r\n" +
+               "Authorization: Bearer " + planterToken + "\r\n" +
                "Connection: close\r\n\r\n");
-
-  while (client.connected()) {
-    String line = client.readStringUntil('\n');
-    if (line == "\r") {
-      Serial.println("headers received");
-      break;
-    }
-  }
-  String line = client.readStringUntil('\n');
-  if (line.startsWith("{")) {
-    Serial.println("esp8266/Arduino CI successfull!");
-  } else {
-    Serial.println("esp8266/Arduino CI has failed");
-  }
-  // TODO Fix this
-  // Send HTTP request
-  client.println(F("GET /example.json HTTP/1.0"));
-  client.println(F("Host: arduinojson.org"));
-  client.println(F("Connection: close"));
-  if (client.println() == 0) {
-    Serial.println(F("Failed to send request"));
-    return;
-  }
-
-  // Check HTTP status
-  char status[32] = {0};
-  client.readBytesUntil('\r', status, sizeof(status));
-  if (strcmp(status, "HTTP/1.1 200 OK") != 0) {
-    Serial.print(F("Unexpected response: "));
-    Serial.println(status);
-    return;
-  }
 
   // Skip HTTP headers
   char endOfHeaders[] = "\r\n\r\n";
   if (!client.find(endOfHeaders)) {
-    Serial.println(F("Invalid response"));
-    return;
-  }
-
-  // Allocate JsonBuffer
-  // Use arduinojson.org/assistant to compute the capacity.
-  const size_t capacity = JSON_OBJECT_SIZE(3) + JSON_ARRAY_SIZE(2) + 60;
-  DynamicJsonBuffer jsonBuffer(capacity);
-
-  // Parse JSON object
-  JsonObject& root = jsonBuffer.parseObject(client);
-  if (!root.success()) {
-    Serial.println(F("Parsing failed!"));
     return;
   }
                 
@@ -182,7 +137,7 @@ void getConfiguration() {
   // It's a reference to the JsonObject, the actual bytes are inside the
   // JsonBuffer with all the other nodes of the object tree.
   // Memory is freed when jsonBuffer goes out of scope.
-  JsonObject& root = jsonBuffer.parseObject(json);
+  JsonObject& root = jsonBuffer.parseObject(client);
 
   // Test if parsing succeeds.
   if (!root.success()) {
