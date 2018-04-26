@@ -126,6 +126,9 @@ String Planter::getDataJson() {
                 "\"numberFertilizersInTank\":\"8\", "
                 "\"currentWatersInTank\":\"20\", "
                 "\"currentFertilizersInTank\":\"10\", "
+                "\"daysBetweenWaters\":\"1\", "
+                "\"numberPumpRunsPerWater\":\"1\", "
+    int vacationModeLength;
 
                 "\"temperature\":\"100\", "
                 "\"light\":\"110\", "
