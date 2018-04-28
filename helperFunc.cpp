@@ -69,7 +69,7 @@ void getConfiguration() {
   // Old Json
   // "{\"configuration\": {\"macAddr\": \"macAddressW/OCols\",\"vacationMode\": \"V\",\"waterStartHour\": \"6\",\"waterPeriod\": \"4\",\"useMiracleGro\": \"0\",\"moistureLowerBound\": \"45\"}}";
 
-  StaticJsonBuffer<200> jsonBuffer;
+  StaticJsonBuffer<300> jsonBuffer;
 
   // StaticJsonBuffer allocates memory on the stack, it can be
   // replaced by DynamicJsonBuffer which allocates in the heap.
@@ -88,8 +88,9 @@ void getConfiguration() {
                 "\"numberFertilizersInTank\":\"8\", "
                 "\"currentWatersInTank\":\"20\", "
                 "\"currentFertilizersInTank\":\"10\", "
-                "\"numberWatersUsed\":\"3\", "
-                "\"numberFertilizersUsed\":\"1\", "
+                "\"daysBetweenWaters\":\"1\", "
+                "\"numberPumpRunsPerWater\": \"1\", "
+                "\"vacationModeLength\": \"0\", " 
                 "\"temperature\":\"100\", "
                 "\"light\":\"110\", "
                 "\"moisture\":\"38\"}";
@@ -118,34 +119,35 @@ void getConfiguration() {
   int numberFertilizersInTank = root["numberFertilizersInTank"];
   int currentWatersInTank = root["currentWatersInTank"];
   int currentFertilizersInTank = root["currentFertilizersInTank"];
-  int numberWatersUsed = root["numberWatersUsed"];
-  int numberFertilizersUsed = root["numberFertilizersUsed"];
+  int daysBetweenWaters = root["daysBetweenWaters"];
+  int numberPumpRunsPerWater = root["numberPumpRunsPerWater"];
+  int vacationModeLength = root["vacationModeLength"];
   int temperature = root["temperature"];
   int light = root["light"];
   int moisture = root["moisture"];
 
   Serial.println("Parsing JSON configuration");
-  Serial.println(vacationMode);
-  Serial.println(useFeritizer);
-  Serial.println(moistureLowerBound);
-  Serial.println(numberWatersInTank);
-  Serial.println(numberFertilizersInTank);
-  Serial.println(currentWatersInTank);
-  Serial.println(currentFertilizersInTank);
-  Serial.println(numberWatersUsed);
-  Serial.println(numberFertilizersUsed);
-  Serial.println(temperature);
-  Serial.println(light);
-  Serial.println(moisture);
+  Serial.println(vacationMode);  // read
+  Serial.println(useFeritizer);  // read
+  Serial.println(moistureLowerBound);  // read
+  Serial.println(numberWatersInTank);  // write? (currently assumed it is hard-coded in planter sw)
+  Serial.println(numberFertilizersInTank); // write? (currently assumed it is hard-coded in planter sw)
+  Serial.println(currentWatersInTank); // write
+  Serial.println(currentFertilizersInTank); // write
+  Serial.println(daysBetweenWaters);  // write
+  Serial.println(numberPumpRunsPerWater);  // write
+  Serial.println(vacationModeLength);  // read
+  Serial.println(temperature);  // write
+  Serial.println(light);  // write
+  Serial.println(moisture);  // write
 
-  Planter.configure(vacationMode, useFeritizer, moistureLowerBound);
-  
+  Planter.configure(vacationMode, useFeritizer, moistureLowerBound, vacationModeLength);
+
+  // save data into sleep memory
   sleepMemory.vacationMode = vacationMode;
   sleepMemory.useFeritizer = useFeritizer;
   sleepMemory.moistureLowerBound = moistureLowerBound;
-  sleepMemory.currentWatersInTank = currentWatersInTank;
-  sleepMemory.currentFertilizersInTank = currentFertilizersInTank;
-
+  sleepMemory.vacationModeLength = vacationModeLength;
   
   /*
   // 1. Parse a JSON string into DOM.

@@ -33,8 +33,9 @@ typedef struct {
   int currentWatersInTank;
   int currentFertilizersInTank;
 
-  int numberWatersUsed;
-  int numberFertilizersUsed; 
+  int daysBetweenWaters;
+  int numberPumpRunsPerWater; 
+  int vacationModeLength;
 } nvmData;
 
 extern nvmData sleepMemory;

@@ -25,13 +25,13 @@
 #include "ArduinoJson.h"
 
 // NVM Data
-#define RTCMemOffset 12 // arbitrary location
+#define RTCMemOffset 11 // arbitrary location
 #define MAGIC_NUMBER 25 // used to know if the memory is good and been written to
 
 class Planter {
   public:
     Planter();
-    int configure(bool vacationModeIn, bool useFeritizerIn, int moistureLowerBoundIn);
+    int configure(bool vacationModeIn, bool useFeritizerIn, int moistureLowerBoundInm, int vacationModeLength);
     int sleep();
     void sleep(int minutes);
 

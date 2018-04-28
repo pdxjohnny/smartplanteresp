@@ -39,7 +39,7 @@ Planter::Planter() {
 }
 
 
-int Planter::configure(bool vacationModeIn, bool useFeritizerIn, int moistureLowerBoundIn) {
+int Planter::configure(bool vacationModeIn, bool useFeritizerIn, int moistureLowerBoundIn, int vacationModeLengthIn) {
   /*
   // Test if inputs are valid
   if(waterStartHourIn < 0 || waterStartHourIn > 23) 
@@ -65,6 +65,7 @@ int Planter::configure(bool vacationModeIn, bool useFeritizerIn, int moistureLow
   vacationMode = vacationModeIn;
   useFeritizer = useFeritizerIn;
   moistureLowerBound = moistureLowerBoundIn;
+  vacationModeLength = vacationModeLengthIn;
 
   
   return 0;
@@ -127,9 +128,8 @@ String Planter::getDataJson() {
                 "\"currentWatersInTank\":\"20\", "
                 "\"currentFertilizersInTank\":\"10\", "
                 "\"daysBetweenWaters\":\"1\", "
-                "\"numberPumpRunsPerWater\":\"1\", "
-    int vacationModeLength;
-
+                "\"numberPumpRunsPerWater\": \"1\", "
+                "\"vacationModeLength\": \"0\", " 
                 "\"temperature\":\"100\", "
                 "\"light\":\"110\", "
                 "\"moisture\":\"38\"}";
@@ -144,8 +144,9 @@ String Planter::getDataJson() {
   JsonArray& numberFertilizersInTankArr = root.createNestedArray("numberFertilizersInTank");
   JsonArray& currentWatersInTankArr = root.createNestedArray("currentWatersInTank");
   JsonArray& currentFertilizersInTankArr = root.createNestedArray("currentFertilizersInTank");
-  JsonArray& numberWatersUsedArr = root.createNestedArray("numberWatersUsed");
+  JsonArray& daysBetweenWatersArr = root.createNestedArray("daysBetweenWaters");
   JsonArray& numberFertilizersUsedArr = root.createNestedArray("numberFertilizersUsed");
+  JsonArray& vacationModeLengthArr = root.createNestedArray("vacationModeLength");
   JsonArray& temperatureArr = root.createNestedArray("temperature");
   JsonArray& lightArr = root.createNestedArray("light");
   JsonArray& moistureArr = root.createNestedArray("moisture");
@@ -159,8 +160,9 @@ String Planter::getDataJson() {
   root["numberFertilizersInTank"] = numberFertilizersInTank;
   root["currentWatersInTank"] = currentWatersInTank;
   root["currentFertilizersInTank"] = currentFertilizersInTank;
-  root["numberWatersUsed"] = numberWatersUsed;
-  root["numberFertilizersUsed"] = numberFertilizersUsed;
+  root["daysBetweenWaters"] = daysBetweenWaters;
+  root["numberPumpRunsPerWater"] = numberPumpRunsPerWater;
+  root["vacationModeLength"] = vacationModeLength;
   root["temperature"] = temperature;
   root["light"] = light;
   root["moisture"] = moisture;
