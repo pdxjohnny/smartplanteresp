@@ -15,7 +15,7 @@
  *    See planterMain.ino
  */
 
-#include "helperfunc.h" 
+#include "helperFunc.h"
 
 void saveData() {
   ESP.rtcUserMemoryWrite((uint32_t)RTCMemOffset, (uint32_t*) &sleepMemory, sizeof(sleepMemory));
@@ -30,9 +30,17 @@ int readData() {
 void apConnect(bool rst) {
   if(rst)
     wifiManager.resetSettings();
-  
-  wifiManager.setConfigPortalTimeout(300);
+
+  WiFiManagerParameter token_param("token", "token", sleepMemory.token, 1024);
+  wifiManager.addParameter(&token_param);
+  wifiManager.setAPStaticIPConfig(IPAddress(10, 0, 1, 1),
+      IPAddress(10, 0, 1, 1), IPAddress(255, 255, 255, 0));
+  // wifiManager.setConfigPortalTimeout(300);
   wifiManager.autoConnect("Smart Planter");
+  strncpy(sleepMemory.token, token_param.getValue(), 1023);
+  sleepMemory.token[1023] = '\0';
+  Serial.print("token: ");
+  Serial.println(sleepMemory.token);
   Serial.println("WiFi Connected");
 }
 
@@ -94,13 +102,47 @@ void getConfiguration() {
                 "\"temperature\":\"100\", "
                 "\"light\":\"110\", "
                 "\"moisture\":\"38\"}";
-                
+  
+  const char* host = "web.cecs.pdx.edu";
+  const int httpsPort = 443;
+
+  // Use web browser to view and copy
+  // SHA1 fingerprint of the certificate
+  const char* fingerprint = "FA 94 C4 62 D6 F7 A6 60 AD 43 0F 1B C4 F1 84 85 EE 29 7D A0";
+
+  // Use WiFiClientSecure class to create TLS connection
+  WiFiClientSecure client;
+  if (!client.connect(host, httpsPort)) {
+    Serial.println("connection failed");
+    return;
+  }
+
+  if (client.verify(fingerprint, host)) {
+    Serial.println("certificate matches");
+  } else {
+    Serial.println("certificate doesn't match");
+    return;
+  }
+
+  String url = "/~jsa3/smartplanter/api/sync/";
+
+  client.print(String("GET ") + url + " HTTP/1.1\r\n" +
+               "Host: " + host + "\r\n" +
+               "Authorization: Bearer " + sleepMemory.token + "\r\n" +
+               "Connection: close\r\n\r\n");
+
+  // Skip HTTP headers
+  char endOfHeaders[] = "\r\n\r\n";
+  if (!client.find(endOfHeaders)) {
+    return;
+  }
+
   // Root of the object tree.
   //
   // It's a reference to the JsonObject, the actual bytes are inside the
   // JsonBuffer with all the other nodes of the object tree.
   // Memory is freed when jsonBuffer goes out of scope.
-  JsonObject& root = jsonBuffer.parseObject(json);
+  JsonObject& root = jsonBuffer.parseObject(client);
 
   // Test if parsing succeeds.
   if (!root.success()) {

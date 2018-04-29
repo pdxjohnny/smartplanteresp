@@ -34,7 +34,7 @@
  *    
  *    Todo:
  */
-#include "helperfunc.h"
+#include "helperFunc.h"
 nvmData sleepMemory;
 class Planter Planter;
 WiFiManager wifiManager;
