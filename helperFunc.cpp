@@ -111,7 +111,7 @@ void getConfiguration() {
 
   // Use web browser to view and copy
   // SHA1 fingerprint of the certificate
-  const char* fingerprint = "UPDATE_ME";
+  const char* fingerprint = "FA 94 C4 62 D6 F7 A6 60 AD 43 0F 1B C4 F1 84 85 EE 29 7D A0";
 
   // Use WiFiClientSecure class to create TLS connection
   WiFiClientSecure client;
