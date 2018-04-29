@@ -36,6 +36,8 @@ typedef struct {
   int daysBetweenWaters;
   int numberPumpRunsPerWater; 
   int vacationModeLength;
+
+  char token[1024];
 } nvmData;
 
 extern nvmData sleepMemory;

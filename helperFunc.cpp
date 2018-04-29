@@ -15,7 +15,7 @@
  *    See planterMain.ino
  */
 
-#include "helperfunc.h"
+#include "helperFunc.h"
 
 #include <ESP8266WiFi.h>
 #include <WiFiClientSecure.h>
@@ -33,9 +33,17 @@ int readData() {
 void apConnect(bool rst) {
   if(rst)
     wifiManager.resetSettings();
-  
-  wifiManager.setConfigPortalTimeout(300);
+
+  WiFiManagerParameter token_param("token", "token", sleepMemory.token, 1024);
+  wifiManager.addParameter(&token_param);
+  wifiManager.setAPStaticIPConfig(IPAddress(10, 0, 1, 1),
+      IPAddress(10, 0, 1, 1), IPAddress(255, 255, 255, 0));
+  // wifiManager.setConfigPortalTimeout(300);
   wifiManager.autoConnect("Smart Planter");
+  strncpy(sleepMemory.token, token_param.getValue(), 1023);
+  sleepMemory.token[1023] = '\0';
+  Serial.print("token: ");
+  Serial.println(sleepMemory.token);
   Serial.println("WiFi Connected");
 }
 
@@ -119,12 +127,11 @@ void getConfiguration() {
     return;
   }
 
-  String url = "/~jsa3/smartplanter/api/sync/?resource=";
-  url.concat(planterResourceID);
+  String url = "/~jsa3/smartplanter/api/sync/";
 
   client.print(String("GET ") + url + " HTTP/1.1\r\n" +
                "Host: " + host + "\r\n" +
-               "Authorization: Bearer " + planterToken + "\r\n" +
+               "Authorization: Bearer " + sleepMemory.token + "\r\n" +
                "Connection: close\r\n\r\n");
 
   // Skip HTTP headers
@@ -132,7 +139,7 @@ void getConfiguration() {
   if (!client.find(endOfHeaders)) {
     return;
   }
-                
+
   // Root of the object tree.
   //
   // It's a reference to the JsonObject, the actual bytes are inside the
