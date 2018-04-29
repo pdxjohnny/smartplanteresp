@@ -18,6 +18,9 @@
 
 #include "Planter.h"
 
+#include <ESP8266WiFi.h>
+#include <WiFiClientSecure.h>
+
 // nvmData is used to check the validity of memory
 typedef struct {
   int wakeCount;

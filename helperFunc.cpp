@@ -17,9 +17,6 @@
 
 #include "helperFunc.h"
 
-#include <ESP8266WiFi.h>
-#include <WiFiClientSecure.h>
-
 void saveData() {
   ESP.rtcUserMemoryWrite((uint32_t)RTCMemOffset, (uint32_t*) &sleepMemory, sizeof(sleepMemory));
 }
