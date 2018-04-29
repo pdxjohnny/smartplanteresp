@@ -15,7 +15,10 @@
  *    See planterMain.ino
  */
 
-#include "helperfunc.h" 
+#include "helperfunc.h"
+
+#include <ESP8266WiFi.h>
+#include <WiFiClientSecure.h>
 
 void saveData() {
   ESP.rtcUserMemoryWrite((uint32_t)RTCMemOffset, (uint32_t*) &sleepMemory, sizeof(sleepMemory));
@@ -94,13 +97,48 @@ void getConfiguration() {
                 "\"temperature\":\"100\", "
                 "\"light\":\"110\", "
                 "\"moisture\":\"38\"}";
+  
+  const char* host = "web.cecs.pdx.edu";
+  const int httpsPort = 443;
+
+  // Use web browser to view and copy
+  // SHA1 fingerprint of the certificate
+  const char* fingerprint = "UPDATE_ME";
+
+  // Use WiFiClientSecure class to create TLS connection
+  WiFiClientSecure client;
+  if (!client.connect(host, httpsPort)) {
+    Serial.println("connection failed");
+    return;
+  }
+
+  if (client.verify(fingerprint, host)) {
+    Serial.println("certificate matches");
+  } else {
+    Serial.println("certificate doesn't match");
+    return;
+  }
+
+  String url = "/~jsa3/smartplanter/api/sync/?resource=";
+  url.concat(planterResourceID);
+
+  client.print(String("GET ") + url + " HTTP/1.1\r\n" +
+               "Host: " + host + "\r\n" +
+               "Authorization: Bearer " + planterToken + "\r\n" +
+               "Connection: close\r\n\r\n");
+
+  // Skip HTTP headers
+  char endOfHeaders[] = "\r\n\r\n";
+  if (!client.find(endOfHeaders)) {
+    return;
+  }
                 
   // Root of the object tree.
   //
   // It's a reference to the JsonObject, the actual bytes are inside the
   // JsonBuffer with all the other nodes of the object tree.
   // Memory is freed when jsonBuffer goes out of scope.
-  JsonObject& root = jsonBuffer.parseObject(json);
+  JsonObject& root = jsonBuffer.parseObject(client);
 
   // Test if parsing succeeds.
   if (!root.success()) {
