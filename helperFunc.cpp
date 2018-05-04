@@ -77,35 +77,9 @@ void goToSleep() {
 }
 
 void getConfiguration() {
-  // Old Json
-  // "{\"configuration\": {\"macAddr\": \"macAddressW/OCols\",\"vacationMode\": \"V\",\"waterStartHour\": \"6\",\"waterPeriod\": \"4\",\"useMiracleGro\": \"0\",\"moistureLowerBound\": \"45\"}}";
+  const size_t bufferSize = JSON_OBJECT_SIZE(10) + 250;
+  DynamicJsonBuffer jsonBuffer(bufferSize);
 
-  StaticJsonBuffer<300> jsonBuffer;
-
-  // StaticJsonBuffer allocates memory on the stack, it can be
-  // replaced by DynamicJsonBuffer which allocates in the heap.
-  //
-  // DynamicJsonBuffer  jsonBuffer(200);
-
-  // JSON input string.
-  //
-  // It's better to use a char[] as shown here.
-  // If you use a const char* or a String, ArduinoJson will
-  // have to make a copy of the input in the JsonBuffer.
-  char json[] = "{\"vacationMode\":\"1\", "
-                "\"useFeritizer\":\"1\", "
-                "\"moistureLowerBound\":\"40\", "
-                "\"numberWatersInTank\":\"15\", "
-                "\"numberFertilizersInTank\":\"8\", "
-                "\"currentWatersInTank\":\"20\", "
-                "\"currentFertilizersInTank\":\"10\", "
-                "\"daysBetweenWaters\":\"1\", "
-                "\"numberPumpRunsPerWater\": \"1\", "
-                "\"vacationModeLength\": \"0\", " 
-                "\"temperature\":\"100\", "
-                "\"light\":\"110\", "
-                "\"moisture\":\"38\"}";
-  
   const char* host = "web.cecs.pdx.edu";
   const int httpsPort = 443;
 
@@ -138,6 +112,7 @@ void getConfiguration() {
   // Skip HTTP headers
   char endOfHeaders[] = "\r\n\r\n";
   if (!client.find(endOfHeaders)) {
+    Serial.println("could not find end of headers");
     return;
   }
 
@@ -147,45 +122,38 @@ void getConfiguration() {
   // JsonBuffer with all the other nodes of the object tree.
   // Memory is freed when jsonBuffer goes out of scope.
   JsonObject& root = jsonBuffer.parseObject(client);
-
   // Check if parsing succeeds.
   if (!root.success()) {
     Serial.println("parseObject() failed");
     return;
   }
+  bool vacationMode = root["vacationMode"]; // true
+  int vacationModeLength = root["vacationModeLength"]; // 2
+  bool useFeritizer = root["useFeritizer"]; // true
+  int moistureLowerBound = root["moistureLowerBound"]; // 20
+  int daysBetweenWaters = root["daysBetweenWaters"]; // 7
+  int numberWatersInTank = root["numberWatersInTank"]; // 16
+  int currentWatersInTank = root["currentWatersInTank"]; // 16
+  int numberPumpRunsPerWater = root["numberPumpRunsPerWater"]; // 1
+  int numberFertilizersInTank = root["numberFertilizersInTank"]; // 8
+  int currentFertilizersInTank = root["currentFertilizersInTank"]; // 8
 
   // Fetch values.
   //
   // Most of the time, you can rely on the implicit casts.
   // In other case, you can do root["time"].as<long>();
-  bool vacationMode = root["vacationMode"];
-  bool useFeritizer = root["useFeritizer"];
-  int moistureLowerBound = root["moistureLowerBound"];
-  int numberWatersInTank = root["numberWatersInTank"];
-  int numberFertilizersInTank = root["numberFertilizersInTank"];
-  int currentWatersInTank = root["currentWatersInTank"];
-  int currentFertilizersInTank = root["currentFertilizersInTank"];
-  int daysBetweenWaters = root["daysBetweenWaters"];
-  int numberPumpRunsPerWater = root["numberPumpRunsPerWater"];
-  int vacationModeLength = root["vacationModeLength"];
-  int temperature = root["temperature"];
-  int light = root["light"];
-  int moisture = root["moisture"];
 
   Serial.println("Parsing JSON configuration");
-  Serial.println(vacationMode);  // read
-  Serial.println(useFeritizer);  // read
-  Serial.println(moistureLowerBound);  // read
-  Serial.println(numberWatersInTank);  // write? (currently assumed it is hard-coded in planter sw)
-  Serial.println(numberFertilizersInTank); // write? (currently assumed it is hard-coded in planter sw)
-  Serial.println(currentWatersInTank); // write
-  Serial.println(currentFertilizersInTank); // write
-  Serial.println(daysBetweenWaters);  // write
-  Serial.println(numberPumpRunsPerWater);  // write
-  Serial.println(vacationModeLength);  // read
-  Serial.println(temperature);  // write
-  Serial.println(light);  // write
-  Serial.println(moisture);  // write
+  Serial.println(vacationMode);
+  Serial.println(vacationModeLength);
+  Serial.println(useFeritizer);
+  Serial.println(moistureLowerBound);
+  Serial.println(daysBetweenWaters);
+  Serial.println(numberWatersInTank);
+  Serial.println(currentWatersInTank);
+  Serial.println(numberPumpRunsPerWater);
+  Serial.println(numberFertilizersInTank);
+  Serial.println(currentFertilizersInTank);
 
   Planter.configure(vacationMode, useFeritizer, moistureLowerBound, vacationModeLength);
 
