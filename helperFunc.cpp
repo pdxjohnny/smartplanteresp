@@ -268,14 +268,15 @@ void wakeup() {
   Serial.println(sleepMemory.wakeCount);
   timerMinute = 30;
 
-  /* Water the plant */
   
   if(sleepMemory.wakeCount == -1) {
     Serial.println("Watering ");
-    // connect to internet
+ 
     apConnect(false);
     getConfiguration();
     setTimer();
+    // TODO: water the plant here
+    // TODO_JSON: Call send JSON data function here
   }
   else if(sleepMemory.wakeCount < -1) {
     Serial.println("ERROR");
@@ -365,6 +366,8 @@ int calcTime() {
   return waterStartHour * 60 - (currentHour * 60 + currentMinute); // return watering timer (in minutes)
 */
 }
+
+//TODO_JSON: Add implementation of the send JSON data function here
 
 /*
   system_rtc_mem_read(64, &booted, sizeof(booted));
