@@ -367,7 +367,7 @@ int calcTime() {
 */
 }
 
-//TODO_JSON: Add implementation of the send JSON data function here
+//TODO_JSON: Add implementation of the send JSON data function here (This function gets the JSON string String by calling "Planter.getDataJson();"
 
 /*
   system_rtc_mem_read(64, &booted, sizeof(booted));
