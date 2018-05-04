@@ -361,10 +361,13 @@ bool sendServerUpdatedJSON() {
 
   String url = "/~jsa3/smartplanter/api/sync/";
 
+  String data = Planter.getDataJson();
   client.print(String("PUT ") + url + " HTTP/1.1\r\n" +
                "Host: " + host + "\r\n" +
+               "Content-Type: application/json\r\n" +
+               "Content-Length: " + data.length() + "\r\n" +
                "Authorization: Bearer " + sleepMemory.token + "\r\n" +
-               "Connection: close\r\n\r\n" + Planter.getDataJson());
+               "Connection: close\r\n\r\n" + data);
 
 
   while (client.connected()) {
