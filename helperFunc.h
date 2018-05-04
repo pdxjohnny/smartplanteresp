@@ -67,3 +67,4 @@ void memoryCorrupted();
 void wakeup();
 int getTime();
 int calcTime();
+// TODO_JSON: add a function declaration for sending JSON to server
