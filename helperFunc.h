@@ -62,3 +62,4 @@ void memoryCorrupted();
 void wakeup();
 int getTime();
 int calcTime();
+void water();

@@ -26,6 +26,7 @@
  *      3. water / fertilize the plant
  *      4. read configuration in json from server
  *      5. send data in json to server
+ *      
  *  Rev 0.2 4/21/2018
  *  
  *    New features:
@@ -34,6 +35,7 @@
  *    
  *    Todo:
  */
+ 
 #include "helperfunc.h"
 nvmData sleepMemory;
 class Planter Planter;
@@ -47,6 +49,66 @@ int timerMinute;
 int currentHour;
 int currentMinute;
 
+/*
+Led WLed(rLedPin);
+Led GLed(gLedPin);
+Led BLed(bLedPin);
+Light LightSensor(lightPin, lightSel, muxS0Pin, muxS1Pin);
+Moisture MoistureSensor(moisturePin, moistureSel, muxS0Pin, muxS1Pin);
+Pump WaterPump(waterPumpPin, 1);
+Pump FertilizerPump(FertilizerPumpPin, 2);
+Temperature TemperatureSensor(temperaturePin, temperatureSel, muxS0Pin, muxS1Pin);
+WaterLevel WaterLevelSnesor(waterLvlPin);
+WaterLevel FertilizerLevelSnesor(FertilizerLvlPin);
+*/
+
+
+// fertilizer pointer
+int fertilizersToUseArr[6] = {1, 1, 2, 1, 1, 0};
+int fertilizerPtr = 0;
+
+int moistureLowerBound = 650;
+
+/*
+void water() {
+  bool okayToWater;
+  bool okayToFertilize;
+
+  if(!WaterLevelSnesor.waterPresent()) {
+    WLed.turnOn();
+    okayToWater = false;
+  }
+  else {
+    WLed.turnOff();
+    okayToWater = true;
+  }
+
+  if(!FertilizerLevelSnesor.waterPresent()) {
+    GLed.turnOn();
+    okayToFertilize = true;
+  }
+  else {
+    GLed.turnOff();
+    okayToFertilize = false;
+  }
+  
+  if(MoistureSensor.getMoisture() < moistureLowerBound) {
+    // Water the plant
+    WaterPump.pumpWater();
+
+    for(int i=0; i<fertilizersToUseArr[fertilizerPtr]; ++i) {
+      FertilizerPump.pumpWater();
+    }
+
+    // update water info
+
+    // update fertilizer pointer
+    fertilizerPtr += 1;
+    if(fertilizerPtr >= 6)
+      fertilizerPtr = 0; 
+  }
+}
+*/
 void setup() {
   initialize();
   if(sleepMemory.magicNumber != MAGIC_NUMBER) { // Data read from memory is not valid
