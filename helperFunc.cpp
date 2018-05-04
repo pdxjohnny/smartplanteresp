@@ -276,7 +276,8 @@ void wakeup() {
     getConfiguration();
     setTimer();
     // TODO: water the plant here
-    // TODO_JSON: Call send JSON data function here
+    Serial.print("sendServerUpdatedJSON: ");
+    Serial.println(sendServerUpdatedJSON());
   }
   else if(sleepMemory.wakeCount < -1) {
     Serial.println("ERROR");
@@ -367,8 +368,51 @@ int calcTime() {
 */
 }
 
-//TODO_JSON: Add implementation of the send JSON data function here (This function gets the JSON string String by calling "Planter.getDataJson();"
+// Send JSON data function
+// This function gets the JSON string String by calling "Planter.getDataJson();"
+bool sendServerUpdatedJSON() {
+  const char* host = "web.cecs.pdx.edu";
+  const int httpsPort = 443;
 
+  // Use web browser to view and copy
+  // SHA1 fingerprint of the certificate
+  // TODO Expires On Tuesday, July 24, 2018 at 4:10:28 PM
+  const char* fingerprint = "05 89 14 F6 C4 D3 4F F5 6B 03 3C 92 7C FD 08 A5 14 82 98 1D";
+
+  // Use WiFiClientSecure class to create TLS connection
+  WiFiClientSecure client;
+  if (!client.connect(host, httpsPort)) {
+    Serial.println("connection failed");
+    return false;
+  }
+
+  if (!client.verify(fingerprint, host)) {
+    Serial.println("certificate doesn't match");
+    return false;
+  }
+
+  String url = "/~jsa3/smartplanter/api/sync/";
+
+  client.print(String("PUT ") + url + " HTTP/1.1\r\n" +
+               "Host: " + host + "\r\n" +
+               "Authorization: Bearer " + sleepMemory.token + "\r\n" +
+               "Connection: close\r\n\r\n" + Planter.getDataJson());
+
+
+  while (client.connected()) {
+    String line = client.readStringUntil('\n');
+    if (line == "\r") {
+      Serial.println("headers received");
+      break;
+    }
+  }
+  String line = client.readStringUntil('\n');
+  if (line.startsWith("{\"udpated\":true}")) {
+    return true;
+  }
+
+  return false;
+}
 /*
   system_rtc_mem_read(64, &booted, sizeof(booted));
   Serial.begin(9600);
