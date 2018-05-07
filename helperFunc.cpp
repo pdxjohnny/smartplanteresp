@@ -254,6 +254,8 @@ void getConfiguration() {
   Serial.println(numberFertilizersInTank);
   Serial.println(currentFertilizersInTank);
 
+  client.stop();
+
   Planter.configure(vacationMode, useFeritizer, moistureLowerBound, vacationModeLength);
 
   // save data into sleep memory
@@ -449,18 +451,22 @@ bool sendServerUpdatedJSON() {
   // Use WiFiClientSecure class to create TLS connection
   WiFiClientSecure client;
   if (!client.connect(host, httpsPort)) {
-    Serial.println("connection failed");
+    Serial.println("sendServerUpdatedJSON: connection failed");
     return false;
   }
+  Serial.println("sendServerUpdatedJSON: Connected to server");
 
   if (!client.verify(fingerprint, host)) {
-    Serial.println("certificate doesn't match");
+    Serial.println("sendServerUpdatedJSON: certificate doesn't match");
     return false;
   }
+  Serial.println("sendServerUpdatedJSON: Verification OK");
 
   String url = "/~jsa3/smartplanter/api/sync/";
 
+  Serial.println("sendServerUpdatedJSON: Planter.getDataJson");
   String data = Planter.getDataJson();
+  Serial.println("sendServerUpdatedJSON: Planter.getDataJson successfull");
   client.print(String("PUT ") + url + " HTTP/1.1\r\n" +
                "Host: " + host + "\r\n" +
                "Content-Type: application/json\r\n" +
@@ -468,7 +474,7 @@ bool sendServerUpdatedJSON() {
                "Authorization: Bearer " + sleepMemory.token + "\r\n" +
                "Connection: close\r\n\r\n" + data);
 
-
+  Serial.println("Sent request");
   while (client.connected()) {
     String line = client.readStringUntil('\n');
     if (line == "\r") {
@@ -478,8 +484,10 @@ bool sendServerUpdatedJSON() {
   }
   String line = client.readStringUntil('\n');
   if (line.startsWith("{\"udpated\":true}")) {
+    client.stop();
     return true;
   }
+  client.stop();
 
   return false;
 }
