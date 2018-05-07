@@ -18,6 +18,11 @@
 
 #include "Planter.h"
 
+#include <FS.h>
+
+#include <ESP8266WiFi.h>
+#include <WiFiClientSecure.h>
+
 // nvmData is used to check the validity of memory
 typedef struct {
   int wakeCount;
@@ -36,6 +41,8 @@ typedef struct {
   int daysBetweenWaters;
   int numberPumpRunsPerWater; 
   int vacationModeLength;
+
+  char token[1024];
 } nvmData;
 
 extern nvmData sleepMemory;
@@ -63,3 +70,4 @@ void wakeup();
 int getTime();
 int calcTime();
 void water();
+bool sendServerUpdatedJSON();
