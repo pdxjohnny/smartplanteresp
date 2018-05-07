@@ -17,12 +17,116 @@
 
 #include "helperFunc.h"
 
+void printSleepMemory() {
+  Serial.println("========= BEGIN sleepMemory =========");
+  Serial.print("sleepMemory.wakeCount: ");
+  Serial.println(sleepMemory.wakeCount);
+  Serial.print("sleepMemory.bFirstTime: ");
+  Serial.println(sleepMemory.bFirstTime);
+  Serial.print("sleepMemory.magicNumber: ");
+  Serial.println(sleepMemory.magicNumber);
+  Serial.print("sleepMemory.vacationMode: ");
+  Serial.println(sleepMemory.vacationMode);
+  Serial.print("sleepMemory.useFeritizer: ");
+  Serial.println(sleepMemory.useFeritizer);
+  Serial.print("sleepMemory.moistureLowerBound: ");
+  Serial.println(sleepMemory.moistureLowerBound);
+  Serial.print("sleepMemory.currentWatersInTank: ");
+  Serial.println(sleepMemory.currentWatersInTank);
+  Serial.print("sleepMemory.currentFertilizersInTank: ");
+  Serial.println(sleepMemory.currentFertilizersInTank);
+  Serial.print("sleepMemory.daysBetweenWaters: ");
+  Serial.println(sleepMemory.daysBetweenWaters);
+  Serial.print("sleepMemory.numberPumpRunsPerWater: ");
+  Serial.println(sleepMemory.numberPumpRunsPerWater);
+  Serial.print("sleepMemory.vacationModeLength: ");
+  Serial.println(sleepMemory.vacationModeLength);
+  Serial.print("sleepMemory.token: ");
+  Serial.println(sleepMemory.token);
+  Serial.println("=========  END sleepMemory  =========");
+}
+
 void saveData() {
-  ESP.rtcUserMemoryWrite((uint32_t)RTCMemOffset, (uint32_t*) &sleepMemory, sizeof(sleepMemory));
+  Serial.println("saveData()");
+  if (!SPIFFS.begin()) {
+    Serial.println("failed to mount file system");
+    return;
+  }
+
+  File configFile = SPIFFS.open("/config.json", "w");
+  if (!configFile) {
+    Serial.println("error opening config file");
+    return;
+  }
+
+  DynamicJsonBuffer jsonBuffer;
+  JsonObject& json = jsonBuffer.createObject();
+  json["wakeCount"] = sleepMemory.wakeCount;
+  json["bFirstTime"] = sleepMemory.bFirstTime;
+  json["magicNumber"] = sleepMemory.magicNumber;
+  json["vacationMode"] = sleepMemory.vacationMode;
+  json["useFeritizer"] = sleepMemory.useFeritizer;
+  json["moistureLowerBound"] = sleepMemory.moistureLowerBound;
+  json["currentWatersInTank"] = sleepMemory.currentWatersInTank;
+  json["currentFertilizersInTank"] = sleepMemory.currentFertilizersInTank;
+  json["daysBetweenWaters"] = sleepMemory.daysBetweenWaters;
+  json["numberPumpRunsPerWater"] = sleepMemory.numberPumpRunsPerWater;
+  json["vacationModeLength"] = sleepMemory.vacationModeLength;
+  json["token"] = sleepMemory.token;
+
+  Serial.println("Saved sleepMemory to /config.json");
+  json.prettyPrintTo(Serial);
+  json.printTo(configFile);
+  configFile.close();
 }
 
 int readData() {
-  ESP.rtcUserMemoryRead((uint32_t)RTCMemOffset, (uint32_t*) &sleepMemory, sizeof(sleepMemory));
+  Serial.println("readData()");
+  if (!SPIFFS.begin()) {
+    Serial.println("failed to mount file system");
+    return 0;
+  }
+
+  if (!SPIFFS.exists("/config.json")) {
+    Serial.println("/config.json does not exist");
+    return 0;
+  }
+
+  File configFile = SPIFFS.open("/config.json", "r");
+  if (!configFile) {
+    Serial.println("error opening config file");
+    return 0;
+  }
+
+  size_t size = configFile.size();
+  // Allocate a buffer to store contents of the file.
+  std::unique_ptr<char[]> buf(new char[size]);
+
+  configFile.readBytes(buf.get(), size);
+  DynamicJsonBuffer jsonBuffer;
+  JsonObject& json = jsonBuffer.parseObject(buf.get());
+  json.prettyPrintTo(Serial);
+  if (!json.success()) {
+    Serial.println("Failed to parse JSON");
+    return 0;
+  }
+
+  sleepMemory.wakeCount = json["wakeCount"];
+  sleepMemory.bFirstTime = json["bFirstTime"];
+  sleepMemory.magicNumber = json["magicNumber"];
+  sleepMemory.vacationMode = json["vacationMode"];
+  sleepMemory.useFeritizer = json["useFeritizer"];
+  sleepMemory.moistureLowerBound = json["moistureLowerBound"];
+  sleepMemory.currentWatersInTank = json["currentWatersInTank"];
+  sleepMemory.currentFertilizersInTank = json["currentFertilizersInTank"];
+  sleepMemory.daysBetweenWaters = json["daysBetweenWaters"];
+  sleepMemory.numberPumpRunsPerWater = json["numberPumpRunsPerWater"];
+  sleepMemory.vacationModeLength = json["vacationModeLength"];
+  memset(sleepMemory.token, '\0', 1024);
+  strncpy(sleepMemory.token, json["token"], 1023);
+
+  Serial.println("Loaded sleepMemory from /config.json");
+  printSleepMemory();
   return 1;
 }
 
@@ -64,12 +168,7 @@ void initialize() {
 
 void goToSleep() {
   saveData();
-  Serial.println("Data is saved");
-  Serial.println(sleepMemory.vacationMode);
-  Serial.println(sleepMemory.useFeritizer);
-  Serial.println(sleepMemory.moistureLowerBound);
-  Serial.println(sleepMemory.currentWatersInTank);
-  Serial.println(sleepMemory.currentFertilizersInTank);
+  printSleepMemory();
   Serial.print("Sleeping for...");
   Serial.println(timerMinute);
   Serial.println("======================================================================================");
