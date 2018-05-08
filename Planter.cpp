@@ -39,7 +39,7 @@ Planter::Planter() {
 }
 
 
-int Planter::configure(bool vacationModeIn, bool useFeritizerIn, int moistureLowerBoundIn, int vacationModeLengthIn) {
+int Planter::configure(bool vacationModeIn, bool useFeritizerIn, int moistureLowerBoundIn, int vacationModeLengthIn, bool demoModeIn, int demoFrequencyIn) {
   /*
   // Test if inputs are valid
   if(waterStartHourIn < 0 || waterStartHourIn > 23) 
@@ -66,6 +66,8 @@ int Planter::configure(bool vacationModeIn, bool useFeritizerIn, int moistureLow
   useFeritizer = useFeritizerIn;
   moistureLowerBound = moistureLowerBoundIn;
   vacationModeLength = vacationModeLengthIn;
+  demoMode = demoModeIn;
+  demoFrequency = demoFrequencyIn;
 
   
   return 0;
@@ -150,6 +152,8 @@ String Planter::getDataJson() {
   JsonArray& temperatureArr = root.createNestedArray("temperature");
   JsonArray& lightArr = root.createNestedArray("light");
   JsonArray& moistureArr = root.createNestedArray("moisture");
+  JsonArray& demoModeArr = root.createNestedArray("demoMode");
+  JsonArray& demoFrequencyeArr = root.createNestedArray("demoFrequency");
 
   Serial.println("json data");
   //Serial.println(moistureBefore);
@@ -163,6 +167,8 @@ String Planter::getDataJson() {
   root["daysBetweenWaters"] = daysBetweenWaters;
   root["numberPumpRunsPerWater"] = numberPumpRunsPerWater;
   root["vacationModeLength"] = vacationModeLength;
+  root["demoMode"] = demoMode;
+  root["demoFrequency"] = demoFrequency;
   root["temperature"] = temperature;
   root["light"] = light;
   root["moisture"] = moisture;

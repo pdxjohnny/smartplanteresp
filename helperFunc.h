@@ -42,6 +42,9 @@ typedef struct {
   int numberPumpRunsPerWater; 
   int vacationModeLength;
 
+  bool demoMode;
+  int demoFrequency;
+
   char token[1024];
 } nvmData;
 

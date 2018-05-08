@@ -31,7 +31,7 @@
 class Planter {
   public:
     Planter();
-    int configure(bool vacationModeIn, bool useFeritizerIn, int moistureLowerBoundInm, int vacationModeLength);
+    int configure(bool vacationModeIn, bool useFeritizerIn, int moistureLowerBoundInm, int vacationModeLength, bool demoMode, int demoFrequency);
     int sleep();
     void sleep(int minutes);
 
@@ -99,5 +99,8 @@ class Planter {
     int temperature;
     int light;
     int moisture;
+
+    bool demoMode;
+    int demoFrequency;
 };
 

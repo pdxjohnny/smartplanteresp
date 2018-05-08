@@ -41,6 +41,10 @@ void printSleepMemory() {
   Serial.println(sleepMemory.numberPumpRunsPerWater);
   Serial.print("sleepMemory.vacationModeLength: ");
   Serial.println(sleepMemory.vacationModeLength);
+  Serial.print("sleepMemory.demoMode: ");
+  Serial.println(sleepMemory.demoMode);
+  Serial.print("sleepMemory.demoFrequency: ");
+  Serial.println(sleepMemory.demoFrequency);
   Serial.print("sleepMemory.token: ");
   Serial.println(sleepMemory.token);
   Serial.println("=========  END sleepMemory  =========");
@@ -73,6 +77,8 @@ void saveData() {
   json["numberPumpRunsPerWater"] = sleepMemory.numberPumpRunsPerWater;
   json["vacationModeLength"] = sleepMemory.vacationModeLength;
   json["token"] = sleepMemory.token;
+  json["demoMode"] = sleepMemory.demoMode;
+  json["demoFrequency"] = sleepMemory.demoFrequency;
 
   Serial.println("Saved sleepMemory to /config.json");
   json.prettyPrintTo(Serial);
@@ -124,6 +130,8 @@ int readData() {
   sleepMemory.vacationModeLength = json["vacationModeLength"];
   memset(sleepMemory.token, '\0', 1024);
   strncpy(sleepMemory.token, json["token"], 1023);
+  sleepMemory.demoMode = json["demoMode"];
+  sleepMemory.demoFrequency = json["demoFrequency"];
 
   Serial.println("Loaded sleepMemory from /config.json");
   printSleepMemory();
@@ -176,7 +184,7 @@ void goToSleep() {
 }
 
 void getConfiguration() {
-  const size_t bufferSize = JSON_OBJECT_SIZE(10) + 250;
+  const size_t bufferSize = JSON_OBJECT_SIZE(12) + 250;
   DynamicJsonBuffer jsonBuffer(bufferSize);
 
   const char* host = "web.cecs.pdx.edu";
@@ -236,6 +244,8 @@ void getConfiguration() {
   int numberPumpRunsPerWater = root["numberPumpRunsPerWater"]; // 1
   int numberFertilizersInTank = root["numberFertilizersInTank"]; // 8
   int currentFertilizersInTank = root["currentFertilizersInTank"]; // 8
+  sleepMemory.demoMode = root["demoMode"]; // false
+  sleepMemory.demoFrequency = root["demoFrequency"]; // 30 (seconds)
 
   // Fetch values.
   //
@@ -256,7 +266,7 @@ void getConfiguration() {
 
   client.stop();
 
-  Planter.configure(vacationMode, useFeritizer, moistureLowerBound, vacationModeLength);
+  Planter.configure(vacationMode, useFeritizer, moistureLowerBound, vacationModeLength, sleepMemory.demoMode, sleepMemory.demoFrequency);
 
   // save data into sleep memory
   sleepMemory.vacationMode = vacationMode;
