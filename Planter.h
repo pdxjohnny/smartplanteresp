@@ -1,7 +1,7 @@
 /*
  * File: Planter.h
- * Rev:  0.2
- * Date: 05/01/2018
+ * Rev:  0.3
+ * Date: 05/09/2018
  * 
  * Portland State University ECE Capstone Project
  * IoT-Based Smart Planter
@@ -11,7 +11,6 @@
  *               Tsegaslase Mebrahtu, Andrew Vo, Qiuren Wang
  *               
  * Revision History
- *  Rev 0.1: 04/11/2018
  *    See planterMain.ino
  */
 
@@ -37,39 +36,58 @@
 // define pins here
 // 9 digital pins used, 1 analog used
 // TODO: update actual pin numbers
-#define MUXS0_PIN           1
-#define MUXS1_PIN           2
-#define NETWORKLED_PIN      3  
-#define WATERLED_PIN        4
-#define FERTILIZERLED_PIN   5
+#define MUXS0_PIN           D1
+#define MUXS1_PIN           -1 // not used
+#define NETWORKLED_PIN      D8  
+#define WATERLED_PIN        D5
+#define FERTILIZERLED_PIN   D4
 #define PHOTORESISTOR_PIN   A0
 #define MOISTURE_PIN        A0
-#define WATERPUMP_PIN       6
-#define FERTILIZERPUMP_PIN  7
+#define WATERPUMP_PIN       D7
+#define FERTILIZERPUMP_PIN  D2
 #define TEMPERATURE_PIN     A0
-#define WATERLVL_PIN        8
-#define FERTILIZERLVL_PIN   9
+#define WATERLVL_PIN        D6
+#define FERTILIZERLVL_PIN   D3
 
 // mux select lines
 #define MOISTURE_SEL        1
 #define TEMPERATURE_SEL     2
-#define PHOTORESISTOR_SEL   0
+#define PHOTORESISTOR_SEL   0 // not used
+
+#define DEFAULT_LOWER_BOUND 40
+#define WATER_TANK_CAP 20
+#define FERTILIZER_TANK_CAP 20
+
+// nvmData is used to check the validity of memory
+typedef struct {
+  int wakeCount;
+  bool bFirstTime;
+  int magicNumber;
+  
+  // Configuration
+  bool vacationMode;
+  bool useFeritizer;
+  int moistureLowerBound;
+
+  // Tank status
+  int currentWatersInTank;
+  int currentFertilizersInTank;
+
+  int daysBetweenWaters;
+  int numberPumpRunsPerWater; 
+  int vacationModeLength;
+
+  char token[1024];
+} nvmData;
+
+extern nvmData sleepMemory;
 
 class Planter {
   public:
     Planter();
     int configure(bool vacationModeIn, bool useFeritizerIn, int moistureLowerBoundInm, int vacationModeLength);
-    int sleep();
-    void sleep(int minutes);
-    void displayInternalVars(); // debug
-
-    int water(); // called everytime 30 mintues have elapsed
-
-    String getDataJson();
-
-    // The following functions are used to test hardware connections
-    void inputsTest();
-    void outputsTest();
+    bool water();
+    String getJsonData();
 
   private:
     /* inputs */
@@ -88,7 +106,7 @@ class Planter {
     Led WaterLvlLed = Led(WATERLED_PIN);
     Led FertilizerLvlLed = Led(FERTILIZERLED_PIN);
 
-    // Pumps
+    // Pumps TODO: test this
     Pump WaterPump = Pump(WATERPUMP_PIN, WATER_TYPE);
     Pump FertilizerPump = Pump(FERTILIZERPUMP_PIN, FERTILIZER_TYPE);
 
@@ -111,10 +129,12 @@ class Planter {
     int vacationModeLength;
 
     // Sensor reading
-    //int numberWatersUsed;
-    //int numberFertilizersUsed; 
     int temperature;
     int light;
     int moisture;
+
+    // fertilizer pointer
+    const int fertilizersToUseArr[6] = {1, 1, 2, 1, 1, 0};
+    int fertilizerPtr = 0;
 };
 
