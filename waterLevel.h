@@ -15,7 +15,7 @@
  *  Rev 1.0 05/09/2018: Initial release
  */
 
-#import <Arduino.h>
+#include <Arduino.h>
 
 class WaterLevel {
 	public:

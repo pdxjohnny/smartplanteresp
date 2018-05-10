@@ -78,6 +78,9 @@ typedef struct {
   int vacationModeLength;
 
   char token[1024];
+
+  bool demoMode;
+  int demoFrequency;
 } nvmData;
 
 extern nvmData sleepMemory;
@@ -85,7 +88,7 @@ extern nvmData sleepMemory;
 class Planter {
   public:
     Planter();
-    int configure(bool vacationModeIn, bool useFeritizerIn, int moistureLowerBoundInm, int vacationModeLength);
+    int configure(bool vacationModeIn, bool useFeritizerIn, int moistureLowerBoundInm, int vacationModeLength, bool demoMode, int demoFrequency);
     bool water();
     String getJsonData();
 
@@ -136,5 +139,8 @@ class Planter {
     // fertilizer pointer
     const int fertilizersToUseArr[6] = {1, 1, 2, 1, 1, 0};
     int fertilizerPtr = 0;
+
+    bool demoMode;
+    int demoFrequency;
 };
 

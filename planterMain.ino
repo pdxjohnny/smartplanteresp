@@ -62,7 +62,7 @@ void setup() {
   }  
 
   // TODO: remove this line of code. It is for testing only
-  Planter.configure(1, 1, 40, 0);
+  Planter.configure(1, 1, 40, 0, false, 30);
   saveData();
 }
 
