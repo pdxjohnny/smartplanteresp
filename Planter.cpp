@@ -1,7 +1,7 @@
 /*
  * File: Planter.cpp
- * Rev:  0.2
- * Date: 04/21/2018
+ * Rev:  0.3
+ * Date: 05/09/2018
  * 
  * Portland State University ECE Capstone Project
  * IoT-Based Smart Planter
@@ -11,57 +11,36 @@
  *               Tsegaslase Mebrahtu, Andrew Vo, Qiuren Wang
  *               
  * Revision History
- *  Rev 0.1: 04/11/2018
  *    See planterMain.ino
  */
 
 #include "Planter.h"
 
 Planter::Planter() {
-  /*
-  waterStartHour = 0;
-  waterFrequency = 8;
-  useMiracleGro = true;
-  moistureLowerBound = 30;
-  */
+  vacationMode = false;
+  useFeritizer = true;
+  moistureLowerBound = DEFAULT_LOWER_BOUND;
 
-  Serial.println("Planter initializing vars");
-  /*
-  moistureBefore = 0;
-  moistureAfter = 0;
-  temperature = -40;
+  numberWatersInTank = WATER_TANK_CAP;
+  numberFertilizersInTank = FERTILIZER_TANK_CAP;
+
+  // TODO: When should this reset?
+  currentWatersInTank = -1;
+  currentFertilizersInTank = -1;
+
+  daysBetweenWaters = -1;
+  numberPumpRunsPerWater = -1;
+  vacationModeLength = -1;
+
+  temperature = -1;
   light = -1;
-  waterLevel = 1;
-  miracleGroLevel = 1;
-  watered = 0;
-  fertilized = 0;
-  */
+  moisture = -1;
 }
 
-
 int Planter::configure(bool vacationModeIn, bool useFeritizerIn, int moistureLowerBoundIn, int vacationModeLengthIn, bool demoModeIn, int demoFrequencyIn) {
-  /*
-  // Test if inputs are valid
-  if(waterStartHourIn < 0 || waterStartHourIn > 23) 
-    return -1;
-  if(waterFrequencyIn != 1 && waterFrequencyIn != 2 && waterFrequencyIn != 3 && waterFrequencyIn != 4 && waterFrequencyIn != 6 && waterFrequencyIn != 8 && waterFrequencyIn != 12) 
-    return -2;
-  */
   if(moistureLowerBoundIn < 0 || moistureLowerBoundIn > 100) 
     return -1;
 
-  /*
-  while(waterStartHourIn - waterFrequencyIn > 0)
-    waterStartHourIn -= waterFrequencyIn; // Make startHour to be the hour of the very first watering schedule of the day
-  */
-  
-  // If inputs are valid, store them into internal variables
-  /*
-  waterStartHour = waterStartHourIn;
-  waterFrequency = waterFrequencyIn;
-  useMiracleGro = useMiracleGroIn;
-  moistureLowerBound = moistureLowerBoundIn;
-  */
   vacationMode = vacationModeIn;
   useFeritizer = useFeritizerIn;
   moistureLowerBound = moistureLowerBoundIn;
@@ -69,59 +48,10 @@ int Planter::configure(bool vacationModeIn, bool useFeritizerIn, int moistureLow
   demoMode = demoModeIn;
   demoFrequency = demoFrequencyIn;
 
-  
   return 0;
 }
 
-
-
-
-// startHour is expected to be the hour of the very first watering schedule of the time
-/*
-int Planter::calcTime() {
-  //getTime();
-  while(currentHour >= waterStartHour) 
-    waterStartHour += waterFrequency; // Make startHour to be the hour of the next watering schedule of the day
-
-  return waterStartHour * 60 - (currentHour * 60 + currentMinute); // return watering timer (in minutes)
-}
-*/
-
-
-int Planter::sleep() {
-  ESP.deepSleep(1*1000000);
-  return 0;
-}
-
-// TODO currently is seconds for debugging purposes
-void Planter::sleep(int minutes) {
-  ESP.deepSleep(minutes * 60 * 1000000);
-}
-
-void Planter::displayInternalVars() {
-  /*
-  Serial.print("currentHour: ");
-  Serial.println(currentHour);
-
-  Serial.print("currentMinute: ");
-  Serial.println(currentMinute);
-
-  Serial.print("waterStartHour: ");
-  Serial.println(waterStartHour);
-
-  Serial.print("waterFrequency: ");
-  Serial.println(waterFrequency);
-
-  Serial.print("useMiracleGro: ");
-  Serial.println(useMiracleGro);
-
-  Serial.print("moistureLowerBound: ");
-  Serial.println(moistureLowerBound);
-  */
-}
-
-String Planter::getDataJson() {
-
+String Planter::getJsonData() {
     char json[] = "{\"vacationMode\":\"1\", "
                 "\"useFeritizer\":\"1\", "
                 "\"moistureLowerBound\":\"40\", "
@@ -136,7 +66,6 @@ String Planter::getDataJson() {
                 "\"light\":\"110\", "
                 "\"moisture\":\"38\"}";
 
-           
   StaticJsonBuffer<500> jsonBuffer;
   JsonObject& root = jsonBuffer.createObject();
   JsonArray& vacationModeArr = root.createNestedArray("vacationMode");
@@ -156,7 +85,6 @@ String Planter::getDataJson() {
   JsonArray& demoFrequencyeArr = root.createNestedArray("demoFrequency");
 
   Serial.println("json data");
-  //Serial.println(moistureBefore);
   root["vacationMode"] = vacationMode;
   root["useFeritizer"] = useFeritizer;
   root["moistureLowerBound"] = moistureLowerBound;
@@ -176,11 +104,106 @@ String Planter::getDataJson() {
   Serial.println("Printing JSON Data");
   root.prettyPrintTo(Serial);
 
-
-  Serial.println("Saving data to string");
+  // Store Json data to a string
   String output;
   root.printTo(output);
   
   return output;
 }
 
+bool Planter::water() {
+  bool ret = 0;
+  int localMoistureLowerBound;
+  bool waterLvl, fertilizerLvl;
+
+  Serial.println("******************************Water Start******************************");
+  if(vacationMode) {
+    Serial.println("INFO: Vacation mode");
+    localMoistureLowerBound = moistureLowerBound * 0.8;
+  }
+  else {
+    Serial.println("INFO: Regular mode");
+    localMoistureLowerBound = moistureLowerBound;
+  }
+  
+  /* read sensors */
+  light = LightSensor.getIntensity();
+  moisture = MoistureSensor.getMoisture();
+  // temperature
+  Serial.print("INFO: Sensors - light: ");
+  Serial.print(light);
+  Serial.print(" moisture: ");
+  Serial.print(moisture);
+  Serial.println("%");
+
+  daysBetweenWaters += 1; // TODO: currently implemented as 30 minutes not days
+
+  /* See if watering is needed */
+  Serial.print("INFO: Moisture - Current: ");
+  Serial.print(moisture);
+  Serial.print(" Lower Bound: ");
+  Serial.println(localMoistureLowerBound);
+  
+  if(moisture < localMoistureLowerBound) {
+    Serial.println("INFO: Water required");
+    if(WaterLevelSensor.waterPresent()) {
+      Serial.print("INFO: Water Lvl OK: watering... ");
+      WaterPump.pumpWater();
+      numberPumpRunsPerWater = 1;
+      ret = 1;
+      Serial.println("Done");
+
+      // Only attempt to fertilize if there was enough water
+      if(FertilizerLevelSensor.waterPresent()) {
+        Serial.print("INFO: Fertilizer Lvl OK: fertilizing... ");
+        Serial.print(fertilizersToUseArr[fertilizerPtr]);
+        Serial.println(" fertilizers");
+        for(int i=0; i<fertilizersToUseArr[fertilizerPtr]; ++i) {
+          FertilizerPump.pumpWater();
+        }
+        
+        fertilizerPtr += 1;
+        if(fertilizerPtr >= 6)
+          fertilizerPtr = 0;
+
+        Serial.print("INFO: Updated fertilizerPtr = ");
+        Serial.println(fertilizerPtr);
+
+        Serial.print("INFO: Next fertilizersToUse = ");
+        Serial.println(fertilizersToUseArr[fertilizerPtr]);
+          
+        Serial.println("INFO: Fertilizing done");
+      }
+      else {
+        Serial.println("WARNING: Fertilizer Lvl Low");
+      }
+    }
+    else {
+      Serial.println("WARNING: Water Lvl Low");
+      currentWatersInTank = 0;
+    }
+  }
+  else {
+    numberPumpRunsPerWater = 0;
+  }
+
+  /* Update LEDs & sleep memory */
+  if(WaterLevelSensor.waterPresent())
+    WaterLvlLed.turnOff();
+  else {
+    Serial.println("WARNING: Water Lvl Low (after watering, if applicable)");
+    sleepMemory.currentWatersInTank = 0;
+    WaterLvlLed.turnOn();
+  }
+
+  if(FertilizerLevelSensor.waterPresent())
+    FertilizerLvlLed.turnOff();
+  else {
+    Serial.println("WARNING: Fertilizer Lvl Low (after watering, if applicable)");
+    sleepMemory.currentFertilizersInTank = 0;
+    FertilizerLvlLed.turnOn();
+  }
+  
+  Serial.println("******************************Water End******************************");
+  return ret;
+}

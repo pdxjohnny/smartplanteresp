@@ -1,7 +1,7 @@
 /*
  * File: helperFunc.cpp
- * Rev:  0.2
- * Date: 04/21/2018
+ * Rev:  0.3
+ * Date: 05/09/2018
  * 
  * Portland State University ECE Capstone Project
  * IoT-Based Smart Planter
@@ -11,7 +11,6 @@
  *               Tsegaslase Mebrahtu, Andrew Vo, Qiuren Wang
  *               
  * Revision History
- *  Rev 0.1: 04/11/2018
  *    See planterMain.ino
  */
 
@@ -171,16 +170,6 @@ void initialize() {
 
   // TODO configure planter with saved settings
   readData();
-  bDoneSleeping = false;
-}
-
-void goToSleep() {
-  saveData();
-  printSleepMemory();
-  Serial.print("Sleeping for...");
-  Serial.println(timerMinute);
-  Serial.println("======================================================================================");
-  Planter.sleep(timerMinute);
 }
 
 void getConfiguration() {
@@ -273,178 +262,15 @@ void getConfiguration() {
   sleepMemory.useFeritizer = useFeritizer;
   sleepMemory.moistureLowerBound = moistureLowerBound;
   sleepMemory.vacationModeLength = vacationModeLength;
-  
-  /*
-  // 1. Parse a JSON string into DOM.
-  Serial.println("Loading Configuration.....");
-
-  const char* json = "{\"configuration\": {\"macAddr\": \"macAddressW/OCols\",\"vacationMode\": \"V\",\"waterStartHour\": \"6\",\"waterPeriod\": \"4\",\"useMiracleGro\": \"0\",\"moistureLowerBound\": \"45\"}}";
-  Serial.println("Loading Configuration.....");
-  Document d;
-  Serial.println("Loading Configuration.....");
-
-  d.Parse(json);
-
-  Serial.println("Loading Configuration.....");
-  Serial.println(d["configuration"]["macAddr"].GetString());
-  Serial.println(d["configuration"]["vacationMode"].GetBool());
-  Serial.println(d["configuration"]["waterStartHour"].GetInt());
-  Serial.println(d["configuration"]["waterPeriod"].GetInt());
-  Serial.println(d["configuration"]["useMiracleGro"].GetBool());
-  Serial.println(d["configuration"]["moistureLowerBound"].GetInt());
-  
-  //   std::cout << d["project"].GetString() << std::endl;
-*/
-}
-
-void loadConfiguration() {
-  Serial.println("ERROR. This function is no longer in use.");
-  /*
-  Planter.configure(6, 4, false, 45);
-  sleepMemory.waterStartHour = 6;
-  sleepMemory.waterFrequency = 4;
-  sleepMemory.useMiracleGro = false;
-  sleepMemory.moistureLowerBound = 45;
-  */
-}
-
-void setTimer() {
-  getTime();
-  timer = calcTime();
-  timerHalfHour = timer/30;
-  timerMinute = timer%30;
-
-  Serial.print("Timer half-hour: ");
-  Serial.println(timerHalfHour);
-  Serial.print("Timer minute: ");
-  Serial.println(timerMinute);
-  
-  if(timerMinute == 0) {
-    sleepMemory.wakeCount = timerHalfHour - 1;
-    timerMinute = 30;
-  }
-  else {
-    sleepMemory.wakeCount = timerHalfHour;
-  }
 }
 
 void memoryCorrupted() {
   sleepMemory.bFirstTime = true;
   sleepMemory.magicNumber = MAGIC_NUMBER;
-  bDoneSleeping = true;
 
   Serial.println("Memory corrupted");
   apConnect(true);
   getConfiguration();
-  //getTime();
-  setTimer();
-}
-
-void wakeup() {
-  sleepMemory.wakeCount -= 1; // decrememnt the sleep counter
-  sleepMemory.bFirstTime = false;
-  Serial.print("count is ");
-  Serial.println(sleepMemory.wakeCount);
-  timerMinute = 30;
-
-  
-  if(sleepMemory.wakeCount == -1) {
-    Serial.println("Watering ");
- 
-    apConnect(false);
-    getConfiguration();
-    setTimer();
-    // TODO: water the plant here
-    Serial.print("sendServerUpdatedJSON: ");
-    Serial.println(sendServerUpdatedJSON());
-  }
-  else if(sleepMemory.wakeCount < -1) {
-    Serial.println("ERROR");
-    apConnect(true);
-    getConfiguration();
-    //getTime();
-    setTimer();
-  }
-  else {
-    //Serial.println("Sleep longer..."); 
-  }
-}
-
-int getTime(){
-  // Use WiFiClient class to create TCP connections
-  WiFiClient client;
-  const int httpPort = 13;
-
-  if (!client.connect("128.138.141.172", httpPort)) {
-    Serial.println("connection failed");
-    return 1;
-  }
-  
-  // This will send the request to the server
-  client.print("HEAD / HTTP/1.1\r\nAccept: */*\r\nUser-Agent: Mozilla/4.0 (compatible; ESP8266 NodeMcu Lua;)\r\n\r\n");
-  delay(100);
-
-  while(client.available())
-  {
-    String line = client.readStringUntil('\r');
-
-    if (line.indexOf("Date") != -1) {
-      Serial.print("=====>");
-    } 
-    else {
-      //Serial.println("Line 1");
-      Serial.print(line);
-
-      /*
-      Serial.print("Year: ");
-      Serial.println(line.substring(7, 9));
-
-      Serial.print("Month: ");
-      Serial.println(line.substring(10, 12));
-      
-      Serial.print("Day: ");
-      Serial.println(line.substring(13, 15));
-      
-      Serial.print("Hour: ");
-      Serial.println(line.substring(16, 18));
-      
-      Serial.print("Minute: ");
-      Serial.println(line.substring(19, 21));
-      
-      Serial.print("Second: ");
-      Serial.println(line.substring(22, 24));
-      
-      Serial.println("Done");
-      */
-      currentHour = line.substring(16, 18).toInt();
-      currentMinute = line.substring(19, 21).toInt();
-    }
-  }
-
-  return 0;
-}
-
-int calcTime() {
-  int hour, minute;
-  hour = 24 - currentHour;
-  if(currentMinute == 0) {
-    minute = 0;
-  }
-  else {
-    hour = hour - 1;
-    minute = 60 - currentMinute;
-  }
-
-  while(hour > 8)
-    hour -= 8;
-
-  return hour*60 + minute;
-/*
-  while(currentHour >= waterStartHour) 
-    waterStartHour += waterFrequency; // Make startHour to be the hour of the next watering schedule of the day
-
-  return waterStartHour * 60 - (currentHour * 60 + currentMinute); // return watering timer (in minutes)
-*/
 }
 
 // Send JSON data function
@@ -475,7 +301,7 @@ bool sendServerUpdatedJSON() {
   String url = "/~jsa3/smartplanter/api/sync/";
 
   Serial.println("sendServerUpdatedJSON: Planter.getDataJson");
-  String data = Planter.getDataJson();
+  String data = Planter.getJsonData();
   Serial.println("sendServerUpdatedJSON: Planter.getDataJson successfull");
   client.print(String("PUT ") + url + " HTTP/1.1\r\n" +
                "Host: " + host + "\r\n" +
@@ -501,56 +327,3 @@ bool sendServerUpdatedJSON() {
 
   return false;
 }
-/*
-  system_rtc_mem_read(64, &booted, sizeof(booted));
-  Serial.begin(9600);
-  Serial.print("Count: ");
-  Serial.println(booted);
-  pinMode(D4, OUTPUT);     // Initialize the LED_BUILTIN pin as an output
-
-  // Case 1: Booted but not timer not reached yet
-  if(booted == 1) {
-    //Serial.begin(9600);
-    Serial.println();
-    Serial.println("Waking up...");
-    booted += 1;
-    system_rtc_mem_write(64, &booted, sizeof(booted));
-    //blinkLED();
-    getTime();
-    ESP.deepSleep(600*1000000);  
-  }
-  // Case 2: Booted and timer reached
-  else if(booted < 6) {
-    Serial.println();
-    Serial.println("Waking up...");
-    booted = 0;
-    system_rtc_mem_write(64, &booted, sizeof(booted));
-    //blinkLED();
-    getTime();
-    ESP.deepSleep(600*1000000);  
-  }
-  // Case 3: Not booted before
-  else {
-    Serial.println();
-    Serial.println("normal boot");
-    Serial.println("setting up");
-    booted = 1;
-    system_rtc_mem_write(64, &booted, sizeof(booted));
-    //blinkLED();
-    getTime();
-    ESP.deepSleep(600*1000000);
-  }
-  Serial.println("Does it reach here?");
-}
-
-void blinkLED() {
-  for(int i=0; i<2; ++i) {
-    digitalWrite(D4, LOW);   // Turn the LED on (Note that LOW is the voltage level
-                                    // but actually the LED is on; this is because 
-                                    // it is active low on the ESP-01)
-    delay(500);                      // Wait for a second
-    digitalWrite(D4, HIGH);  // Turn the LED off by making the voltage HIGH
-    delay(500);                      // Wait for two seconds (to demonstrate the active low LED)
-  }
-}
-*/
