@@ -68,6 +68,7 @@ void setup() {
 
 void loop() 
 {
+  getConfiguration();
   Serial.println("loop");
   if(Planter.water())
     if(!sendServerUpdatedJSON())
@@ -80,7 +81,6 @@ void loop()
   if (sleepMemory.demoMode) {
     delay(sleepMemory.demoFrequency * 1e3);
     Planter.water();
-    getConfiguration();
   } else {
     delay(10*1e3); // TODO: set this to 30 minutes, or, in demo mode, set this to the frequency defined in json
   }

@@ -173,7 +173,7 @@ void initialize() {
 }
 
 void getConfiguration() {
-  const size_t bufferSize = JSON_OBJECT_SIZE(12) + 250;
+  const size_t bufferSize = JSON_OBJECT_SIZE(10) + 250;
   DynamicJsonBuffer jsonBuffer(bufferSize);
 
   const char* host = "web.cecs.pdx.edu";
@@ -211,6 +211,7 @@ void getConfiguration() {
     Serial.println("could not find end of headers");
     return;
   }
+  Serial.println("got config from server");
 
   // Root of the object tree.
   //
