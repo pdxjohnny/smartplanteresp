@@ -1,7 +1,7 @@
 /*
  * File: helperFunc.h
- * Rev:  0.3
- * Date: 05/09/2018
+ * Rev:  0.4
+ * Date: 05/16/2018
  * Description: 
  * 
  * Portland State University ECE Capstone Project
@@ -12,7 +12,6 @@
  *               Tsegaslase Mebrahtu, Andrew Vo, Qiuren Wang
  *               
  * Revision History
- *  Rev 0.1: 04/11/2018
  *    See planterMain.ino
  */
 
@@ -30,4 +29,5 @@ void apConnect(bool rst);
 void initialize();
 void getConfiguration();
 void memoryCorrupted();
+void wakeup();
 bool sendServerUpdatedJSON();

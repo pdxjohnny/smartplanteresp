@@ -1,7 +1,7 @@
 /*
  * File: Planter.h
- * Rev:  0.3
- * Date: 05/09/2018
+ * Rev:  0.4
+ * Date: 05/16/2018
  * 
  * Portland State University ECE Capstone Project
  * IoT-Based Smart Planter
@@ -31,7 +31,7 @@
 
 // NVM Data
 #define RTCMemOffset 11 // arbitrary location
-#define MAGIC_NUMBER 25 // used to know if the memory is good and been written to
+#define MAGIC_NUMBER 24 // used to know if the memory is good and been written to
 
 // define pins here
 // 9 digital pins used, 1 analog used
@@ -55,8 +55,8 @@
 #define PHOTORESISTOR_SEL   0 // not used
 
 #define DEFAULT_LOWER_BOUND 40
-#define WATER_TANK_CAP 20
-#define FERTILIZER_TANK_CAP 20
+#define WATER_TANK_CAP      22 // TODO
+#define FERTILIZER_TANK_CAP 12 // TODO
 
 // nvmData is used to check the validity of memory
 typedef struct {
@@ -142,5 +142,8 @@ class Planter {
 
     bool demoMode;
     int demoFrequency;
+
+    //
+    int daysBetweenWatersCounter;
 };
 

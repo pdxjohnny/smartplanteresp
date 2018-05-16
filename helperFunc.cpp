@@ -1,7 +1,7 @@
 /*
  * File: helperFunc.cpp
- * Rev:  0.3
- * Date: 05/09/2018
+ * Rev:  0.4
+ * Date: 05/16/2018
  * 
  * Portland State University ECE Capstone Project
  * IoT-Based Smart Planter
@@ -86,7 +86,7 @@ void saveData() {
 }
 
 int readData() {
-  Serial.println("readData()");
+  Serial.println("##############################Read Data START##############################");
   if (!SPIFFS.begin()) {
     Serial.println("failed to mount file system");
     return 0;
@@ -110,7 +110,8 @@ int readData() {
   configFile.readBytes(buf.get(), size);
   DynamicJsonBuffer jsonBuffer;
   JsonObject& json = jsonBuffer.parseObject(buf.get());
-  json.prettyPrintTo(Serial);
+  Serial.println("Save JSON: ");
+  json.prettyPrintTo(Serial); 
   if (!json.success()) {
     Serial.println("Failed to parse JSON");
     return 0;
@@ -132,8 +133,10 @@ int readData() {
   sleepMemory.demoMode = json["demoMode"];
   sleepMemory.demoFrequency = json["demoFrequency"];
 
+  Serial.println();
   Serial.println("Loaded sleepMemory from /config.json");
   printSleepMemory();
+  Serial.println("##############################Read Data END##############################");
   return 1;
 }
 
@@ -269,9 +272,17 @@ void memoryCorrupted() {
   sleepMemory.bFirstTime = true;
   sleepMemory.magicNumber = MAGIC_NUMBER;
 
-  Serial.println("Memory corrupted");
+  Serial.println("Memory corrupted. Setting up new planter");
   apConnect(true);
   getConfiguration();
+  saveData();
+}
+
+void wakeup() {
+  Serial.println("Power restored. Getting configuration from server");
+  apConnect(false);
+  getConfiguration();
+  saveData();
 }
 
 // Send JSON data function

@@ -1,7 +1,7 @@
 /*
  * File: planterMain.ino
- * Rev:  0.3
- * Date: 05/09/2018
+ * Rev:  0.4
+ * Date: 05/16/2018
  * 
  * Portland State University ECE Capstone Project
  * IoT-Based Smart Planter
@@ -43,45 +43,74 @@
  *      2. Update configure function
  *      3. Add diagnostic
  *      4. Other TODOs commented in the code
+ *  
+ *  Rev 0.4 05/16/2018
+ *    Sketch uses 432201 bytes (41%) of program storage space. Maximum is 1044464 bytes.
+ *    Global variables use 42664 bytes (52%) of dynamic memory, leaving 39256 bytes for local variables. Maximum is 81920 bytes.
+ *    Summary:
+ *      1. Completed daysBetweenWaters
+ *      2. Improved vacation mode by using previous data (days between waters) and current water level
+ *      3. Planter sends data to server every time it waters
+ *      4. Planter asks for configuration every 4 hours
+ *      5. Added demo mode
+ *      6. Added numbers of waters/fertilizers tracking
+ *      7. Updated configure function
+ *    Todo:
+ *      1. Add diagnostic for moisture and light sensors
+ *      2. Use Network LED to indicate and error where planter is not able to connect to Internet
+ *      3. Reset numbers of waters/fertilizers when user refills the tanks
+ *        - Assume user only refills water after he receives water level low alert
  */
 #include "helperFunc.h"
 nvmData sleepMemory;
 class Planter Planter;
 WiFiManager wifiManager;
+int configSinceLastUpdate;
 
 void setup() {
   Serial.begin(9600);
   Serial.println("settig up...");
   
   initialize();
+
+  Serial.println("~GET CONFIG START~");
   if(sleepMemory.magicNumber != MAGIC_NUMBER) { // Data read from memory is not valid
     memoryCorrupted();
   }
   else {
-    //wakeup();
-  }  
-
-  // TODO: remove this line of code. It is for testing only
-  Planter.configure(1, 1, 40, 0, false, 30);
-  saveData();
+    wakeup();
+  }
+  configSinceLastUpdate = 0;
+  Serial.println("~GET CONFIG END~");
 }
 
 void loop() 
 {
-  getConfiguration();
+  
   Serial.println("loop");
-  if(Planter.water())
+
+  /* Water */
+  if(Planter.water()) {   
     if(!sendServerUpdatedJSON())
       Serial.println("send not sucess");
     else {
-      ;// TODO: need to reset daysBetweenWatering
-      saveData();
+      ; // Do nothing here
     }
+  }
+  
+  /* Server Communication*/
+  if(configSinceLastUpdate == 8) {
+    //sendServerUpdatedJSON();
+    getConfiguration();
+    saveData();
+    configSinceLastUpdate = 0;
+  }
+  configSinceLastUpdate += 1;
 
+  /* Delay */
   if (sleepMemory.demoMode) {
-    delay(sleepMemory.demoFrequency * 1e3);
-    Planter.water();
+    delay(sleepMemory.demoFrequency*1e3);
   } else {
-    delay(10*1e3); // TODO: set this to 30 minutes, or, in demo mode, set this to the frequency defined in json
+    delay(2*1e3); // TODO
   }
 }

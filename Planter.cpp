@@ -1,7 +1,7 @@
 /*
  * File: Planter.cpp
- * Rev:  0.3
- * Date: 05/09/2018
+ * Rev:  0.4
+ * Date: 05/16/2018
  * 
  * Portland State University ECE Capstone Project
  * IoT-Based Smart Planter
@@ -24,9 +24,8 @@ Planter::Planter() {
   numberWatersInTank = WATER_TANK_CAP;
   numberFertilizersInTank = FERTILIZER_TANK_CAP;
 
-  // TODO: When should this reset?
-  currentWatersInTank = -1;
-  currentFertilizersInTank = -1;
+  currentWatersInTank = WATER_TANK_CAP;
+  currentFertilizersInTank = FERTILIZER_TANK_CAP;
 
   daysBetweenWaters = -1;
   numberPumpRunsPerWater = -1;
@@ -35,6 +34,8 @@ Planter::Planter() {
   temperature = -1;
   light = -1;
   moisture = -1;
+
+  daysBetweenWatersCounter = -1;
 }
 
 int Planter::configure(bool vacationModeIn, bool useFeritizerIn, int moistureLowerBoundIn, int vacationModeLengthIn, bool demoModeIn, int demoFrequencyIn) {
@@ -52,6 +53,8 @@ int Planter::configure(bool vacationModeIn, bool useFeritizerIn, int moistureLow
 }
 
 String Planter::getJsonData() {
+  daysBetweenWaters = daysBetweenWatersCounter/48.0;
+  
     char json[] = "{\"vacationMode\":\"1\", "
                 "\"useFeritizer\":\"1\", "
                 "\"moistureLowerBound\":\"40\", "
@@ -108,6 +111,8 @@ String Planter::getJsonData() {
   String output;
   root.printTo(output);
   
+  daysBetweenWatersCounter = 0;
+  
   return output;
 }
 
@@ -119,9 +124,28 @@ bool Planter::water() {
   Serial.println("******************************Water Start******************************");
   if(vacationMode) {
     Serial.println("INFO: Vacation mode");
-    localMoistureLowerBound = moistureLowerBound * 0.8;
-  }
-  else {
+    if(daysBetweenWaters == -1 || daysBetweenWaters == 0) {// No data
+      Serial.println("ERROR: daysBetweenWaters not valid.");
+      localMoistureLowerBound = moistureLowerBound * 0.8;
+    }
+    else {
+      Serial.println("INFO: Updating localMoistureLowerBound...");
+      Serial.print("INFO: Vaction Mode Length: ");
+      Serial.print(vacationModeLength);
+      Serial.print("; Days between waters: ");
+      Serial.print(daysBetweenWaters);
+      Serial.print("; Current waters in tank: ");
+      Serial.println(currentWatersInTank);
+      if(vacationModeLength*7/daysBetweenWaters > currentWatersInTank) { // Waters needed > Waters Remained
+        Serial.println("INFO: Waters needed > Waters Remained");
+        // currentWatersInTank/vacationModeLength/7 - daysBetweenWaters = minDaysBetweenWaters - daysBetweenWaters
+        localMoistureLowerBound = moistureLowerBound - moistureLowerBound/2 * (currentWatersInTank/vacationModeLength/7 - daysBetweenWaters);
+      } else {
+        Serial.println("INFO: Waters needed < Waters Remained. No need to adjust bound");
+        localMoistureLowerBound = moistureLowerBound;
+      }
+    }
+  } else {
     Serial.println("INFO: Regular mode");
     localMoistureLowerBound = moistureLowerBound;
   }
@@ -136,7 +160,7 @@ bool Planter::water() {
   Serial.print(moisture);
   Serial.println("%");
 
-  daysBetweenWaters += 1; // TODO: currently implemented as 30 minutes not days
+  daysBetweenWatersCounter += 1; // TODO: currently implemented as 30 minutes not days
 
   /* See if watering is needed */
   Serial.print("INFO: Moisture - Current: ");
@@ -150,6 +174,7 @@ bool Planter::water() {
       Serial.print("INFO: Water Lvl OK: watering... ");
       WaterPump.pumpWater();
       numberPumpRunsPerWater = 1;
+      currentWatersInTank -= 1;
       ret = 1;
       Serial.println("Done");
 
@@ -158,8 +183,9 @@ bool Planter::water() {
         Serial.print("INFO: Fertilizer Lvl OK: fertilizing... ");
         Serial.print(fertilizersToUseArr[fertilizerPtr]);
         Serial.println(" fertilizers");
-        for(int i=0; i<fertilizersToUseArr[fertilizerPtr]; ++i) {
+        for(int i=0; i<fertilizersToUseArr[fertilizerPtr] && FertilizerLevelSensor.waterPresent(); ++i) {
           FertilizerPump.pumpWater();
+          currentFertilizersInTank -= 1;
         }
         
         fertilizerPtr += 1;
@@ -207,3 +233,5 @@ bool Planter::water() {
   Serial.println("******************************Water End******************************");
   return ret;
 }
+
+
