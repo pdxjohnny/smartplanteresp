@@ -1,7 +1,7 @@
 /*
  * File: helperFunc.cpp
- * Rev:  0.4
- * Date: 05/16/2018
+ * Rev:  0.5
+ * Date: 05/17/2018
  * 
  * Portland State University ECE Capstone Project
  * IoT-Based Smart Planter
@@ -141,7 +141,7 @@ int readData() {
 }
 
 // Connect to AP
-void apConnect(bool rst) {
+void apConnect(bool rst, int timeout) {
   if(rst)
     wifiManager.resetSettings();
 
@@ -151,14 +151,14 @@ void apConnect(bool rst) {
   wifiManager.addParameter(&token_param);
   wifiManager.setAPStaticIPConfig(IPAddress(10, 0, 1, 1),
       IPAddress(10, 0, 1, 1), IPAddress(255, 255, 255, 0));
-  // wifiManager.setConfigPortalTimeout(300);
+  wifiManager.setConfigPortalTimeout(timeout);
   wifiManager.autoConnect("Smart Planter");
   memset(sleepMemory.token, '\0', 1024);
   strncpy(sleepMemory.token, token_param.getValue(), 1023);
   sleepMemory.token[1023] = '\0';
   Serial.print("token: ");
   Serial.println(sleepMemory.token);
-  Serial.println("WiFi Connected");
+  //Serial.println("WiFi Connected");
 }
 
 void initialize() {
@@ -171,12 +171,11 @@ void initialize() {
   Serial.println();
   Serial.println("======================================================================================");
 
-  // TODO configure planter with saved settings
   readData();
 }
 
 void getConfiguration() {
-  const size_t bufferSize = JSON_OBJECT_SIZE(10) + 250;
+  const size_t bufferSize = JSON_OBJECT_SIZE(10) + 500; // changed to 500.
   DynamicJsonBuffer jsonBuffer(bufferSize);
 
   const char* host = "web.cecs.pdx.edu";
@@ -273,14 +272,14 @@ void memoryCorrupted() {
   sleepMemory.magicNumber = MAGIC_NUMBER;
 
   Serial.println("Memory corrupted. Setting up new planter");
-  apConnect(true);
+  apConnect(true, 1000);
   getConfiguration();
   saveData();
 }
 
 void wakeup() {
   Serial.println("Power restored. Getting configuration from server");
-  apConnect(false);
+  apConnect(false, 1);
   getConfiguration();
   saveData();
 }

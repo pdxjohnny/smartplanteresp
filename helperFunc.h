@@ -1,7 +1,7 @@
 /*
  * File: helperFunc.h
- * Rev:  0.4
- * Date: 05/16/2018
+ * Rev:  0.5
+ * Date: 05/17/2018
  * Description: 
  * 
  * Portland State University ECE Capstone Project
@@ -25,7 +25,7 @@ extern WiFiManager wifiManager;
 
 void saveData();
 int readData();
-void apConnect(bool rst);
+void apConnect(bool rst, int timeout);
 void initialize();
 void getConfiguration();
 void memoryCorrupted();

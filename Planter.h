@@ -1,7 +1,7 @@
 /*
  * File: Planter.h
- * Rev:  0.4
- * Date: 05/16/2018
+ * Rev:  0.5
+ * Date: 05/17/2018
  * 
  * Portland State University ECE Capstone Project
  * IoT-Based Smart Planter
@@ -35,7 +35,6 @@
 
 // define pins here
 // 9 digital pins used, 1 analog used
-// TODO: update actual pin numbers
 #define MUXS0_PIN           D1
 #define MUXS1_PIN           -1 // not used
 #define NETWORKLED_PIN      D8  
@@ -92,6 +91,8 @@ class Planter {
     bool water();
     String getJsonData();
 
+    Led NetworkErrLed = Led(NETWORKLED_PIN);
+
   private:
     /* inputs */
     // Analog sensors
@@ -105,11 +106,11 @@ class Planter {
   
     /* outputs */
     // LEDs
-    Led NetworkErrLed = Led(NETWORKLED_PIN);
+    //Led NetworkErrLed = Led(NETWORKLED_PIN); // moved to public
     Led WaterLvlLed = Led(WATERLED_PIN);
     Led FertilizerLvlLed = Led(FERTILIZERLED_PIN);
 
-    // Pumps TODO: test this
+    // Pumps
     Pump WaterPump = Pump(WATERPUMP_PIN, WATER_TYPE);
     Pump FertilizerPump = Pump(FERTILIZERPUMP_PIN, FERTILIZER_TYPE);
 
@@ -140,10 +141,16 @@ class Planter {
     const int fertilizersToUseArr[6] = {1, 1, 2, 1, 1, 0};
     int fertilizerPtr = 0;
 
+    // demo mode
     bool demoMode;
     int demoFrequency;
 
-    //
+    // error
+    bool moistureError;
+    
+    // Temp vars
     int daysBetweenWatersCounter;
+    bool waterLvlLow;
+    bool fertilizerLvlLow;
 };
 

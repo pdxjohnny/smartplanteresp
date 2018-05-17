@@ -1,7 +1,7 @@
 /*
  * File: planterMain.ino
- * Rev:  0.4
- * Date: 05/16/2018
+ * Rev:  0.5
+ * Date: 05/17/2018
  * 
  * Portland State University ECE Capstone Project
  * IoT-Based Smart Planter
@@ -60,7 +60,23 @@
  *      2. Use Network LED to indicate and error where planter is not able to connect to Internet
  *      3. Reset numbers of waters/fertilizers when user refills the tanks
  *        - Assume user only refills water after he receives water level low alert
+ *  
+ *  Rev 0.5 05/17/2018
+ *    Sketch uses 432793 bytes (41%) of program storage space. Maximum is 1044464 bytes.
+ *    Global variables use 42888 bytes (52%) of dynamic memory, leaving 39032 bytes for local variables. Maximum is 81920 bytes.
+ *    Summary:
+ *      1. Added diagnostic for moisture sensor (not going to implement this for light sensor, not a moving part, unlikely to fail)
+ *      2. Numbers of waters/fertilizers are reset when user refills the tanks
+ *        - Assume user only refills water after he receives water level low alert
+ *      3. Implemented WiFi error LED. Added timeout back to apConnect(). Added timeout argument to apConnect().
+ *        Issue:
+ *          a. It does not work when user tries to update the wifi settings after connection is lost (stack trace)
+ *          --> Currently, it only tries to reconnect to the same AP. It's only able to receive WiFi settings at the beginning        
+ *    Todo:
+ *      1. planterMain.ino: Line 143: Update delay to 30 minutes
+ *      2. Planter.h: Lines 57 & 58: Update number of waters/fertilizers
  */
+ 
 #include "helperFunc.h"
 nvmData sleepMemory;
 class Planter Planter;
@@ -70,7 +86,7 @@ int configSinceLastUpdate;
 void setup() {
   Serial.begin(9600);
   Serial.println("settig up...");
-  
+
   initialize();
 
   Serial.println("~GET CONFIG START~");
@@ -86,8 +102,23 @@ void setup() {
 
 void loop() 
 {
-  
   Serial.println("loop");
+  /* Network Error */
+  if(WiFi.status() != WL_CONNECTED) {
+    Serial.println("WiFi is not connected. Attempting to connect");
+    Planter.NetworkErrLed.turnOn();
+    apConnect(false, 1); // attempt to connect to ap w/o erasing SSID and PW
+    
+    if(WiFi.status() != WL_CONNECTED) { // try this again
+      Serial.println("WiFi is still not connected.");
+    } else {
+      Planter.NetworkErrLed.turnOff(); 
+    }
+  } else {
+    Planter.NetworkErrLed.turnOff();
+    Serial.println("WiFi connection OK");
+  }
+  Serial.println("WiFi connection test done");
 
   /* Water */
   if(Planter.water()) {   
@@ -111,6 +142,6 @@ void loop()
   if (sleepMemory.demoMode) {
     delay(sleepMemory.demoFrequency*1e3);
   } else {
-    delay(2*1e3); // TODO
+    delay(30*1e3); // TODO 60*30
   }
 }
