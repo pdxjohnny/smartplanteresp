@@ -1,7 +1,7 @@
 /*
  * File: helperFunc.cpp
- * Rev:  0.5
- * Date: 05/17/2018
+ * Rev:  1.0
+ * Date: 05/19/2018
  * 
  * Portland State University ECE Capstone Project
  * IoT-Based Smart Planter
@@ -286,7 +286,7 @@ void wakeup() {
 
 // Send JSON data function
 // This function gets the JSON string String by calling "Planter.getDataJson();"
-bool sendServerUpdatedJSON() {
+bool sendServerUpdatedJSON(bool updateDaysBetweenWaters) {
   const char* host = "web.cecs.pdx.edu";
   const int httpsPort = 443;
 
@@ -312,7 +312,7 @@ bool sendServerUpdatedJSON() {
   String url = "/~jsa3/smartplanter/api/sync/";
 
   Serial.println("sendServerUpdatedJSON: Planter.getDataJson");
-  String data = Planter.getJsonData();
+  String data = Planter.getJsonData(updateDaysBetweenWaters);
   Serial.println("sendServerUpdatedJSON: Planter.getDataJson successfull");
   client.print(String("PUT ") + url + " HTTP/1.1\r\n" +
                "Host: " + host + "\r\n" +
@@ -337,4 +337,60 @@ bool sendServerUpdatedJSON() {
   client.stop();
 
   return false;
+}
+
+String getTime(){
+  // Use WiFiClient class to create TCP connections
+  WiFiClient client;
+  const int httpPort = 13;
+  String line;
+
+  if (!client.connect("128.138.141.172", httpPort)) {
+    Serial.println("connection failed");
+    return "timeStampError";
+  }
+  
+  // This will send the request to the server
+  client.print("HEAD / HTTP/1.1\r\nAccept: */*\r\nUser-Agent: Mozilla/4.0 (compatible; ESP8266 NodeMcu Lua;)\r\n\r\n");
+  delay(100);
+
+  while(client.available())
+  {
+    line = client.readStringUntil('\r');
+
+    if (line.indexOf("Date") != -1) {
+      Serial.print("=====>");
+    } 
+    else {
+      //Serial.println("Line 1");
+      Serial.print(line);
+
+      /*
+      Serial.print("Year: ");
+      Serial.println(line.substring(7, 9));
+
+      Serial.print("Month: ");
+      Serial.println(line.substring(10, 12));
+      
+      Serial.print("Day: ");
+      Serial.println(line.substring(13, 15));
+      
+      Serial.print("Hour: ");
+      Serial.println(line.substring(16, 18));
+      
+      Serial.print("Minute: ");
+      Serial.println(line.substring(19, 21));
+      
+      Serial.print("Second: ");
+      Serial.println(line.substring(22, 24));
+      
+      Serial.println("Done");
+      
+      currentHour = line.substring(16, 18).toInt();
+      currentMinute = line.substring(19, 21).toInt();
+      */
+    }
+  }
+
+  return line;
 }

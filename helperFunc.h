@@ -1,7 +1,7 @@
 /*
  * File: helperFunc.h
- * Rev:  0.5
- * Date: 05/17/2018
+ * Rev:  1.0
+ * Date: 05/19/2018
  * Description: 
  * 
  * Portland State University ECE Capstone Project
@@ -30,4 +30,5 @@ void initialize();
 void getConfiguration();
 void memoryCorrupted();
 void wakeup();
-bool sendServerUpdatedJSON();
+bool sendServerUpdatedJSON(bool updateDaysBetweenWaters);
+String getTime();

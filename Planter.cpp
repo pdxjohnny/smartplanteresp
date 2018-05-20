@@ -1,7 +1,7 @@
 /*
  * File: Planter.cpp
- * Rev:  0.5
- * Date: 05/17/2018
+ * Rev:  1.0
+ * Date: 05/19/2018
  * 
  * Portland State University ECE Capstone Project
  * IoT-Based Smart Planter
@@ -43,6 +43,7 @@ Planter::Planter() {
   daysBetweenWatersCounter = -1;
   waterLvlLow = false;
   fertilizerLvlLow = false;
+  prev_water = "NODATA";
 }
 
 int Planter::configure(bool vacationModeIn, bool useFeritizerIn, int moistureLowerBoundIn, int vacationModeLengthIn, bool demoModeIn, int demoFrequencyIn) {
@@ -59,8 +60,9 @@ int Planter::configure(bool vacationModeIn, bool useFeritizerIn, int moistureLow
   return 0;
 }
 
-String Planter::getJsonData() {
-  daysBetweenWaters = daysBetweenWatersCounter/48.0;
+String Planter::getJsonData(bool updateDaysBetweenWaters) {
+  if(updateDaysBetweenWaters)
+    daysBetweenWaters = daysBetweenWatersCounter/48.0;
 
   StaticJsonBuffer<500> jsonBuffer;
   JsonObject& root = jsonBuffer.createObject();
@@ -80,7 +82,8 @@ String Planter::getJsonData() {
   JsonArray& demoModeArr = root.createNestedArray("demoMode");
   JsonArray& demoFrequencyeArr = root.createNestedArray("demoFrequency");
   JsonArray& moistureErrorArr = root.createNestedArray("moistureError");
-
+  JsonArray& timeStamp = root.createNestedArray("timeStamp");
+  
   Serial.println("json data");
   root["vacationMode"] = vacationMode;
   root["useFeritizer"] = useFeritizer;
@@ -99,20 +102,25 @@ String Planter::getJsonData() {
   root["moisture"] = moisture;
   root["moistureError"] = moistureError;
 
+  if(updateDaysBetweenWaters)
+    prev_water = getTime();
+  
+  root["timeStamp"] = prev_water;
   Serial.println("Printing JSON Data");
   root.prettyPrintTo(Serial);
 
   // Store Json data to a string
   String output;
   root.printTo(output);
-  
-  daysBetweenWatersCounter = 0;
+
+  if(updateDaysBetweenWaters)
+    daysBetweenWatersCounter = 0;
   
   return output;
 }
 
-bool Planter::water() {
-  bool ret = 0;
+int Planter::water() {
+  int ret = 0;
   int localMoistureLowerBound;
   bool waterLvl, fertilizerLvl;
 
@@ -121,6 +129,7 @@ bool Planter::water() {
   if(moisture == MoistureSensor.getMoisture() && MoistureSensor.getMoisture() == 0) {
     moistureError = true;
     Serial.println("ERROR: Moisture sensor");
+    Serial.println("******************************Water Exit******************************");
     return -1;
   } else {
     moistureError = false;
@@ -230,26 +239,26 @@ bool Planter::water() {
     numberPumpRunsPerWater = 0;
   }
 
-  /* Update LEDs, sleep memory, and water levels */
+  /* Update sleep memory and water levels */
   waterLvlLow = !WaterLevelSensor.waterPresent();
   fertilizerLvlLow = !FertilizerLevelSensor.waterPresent();
   
-  if(WaterLevelSensor.waterPresent())
-    WaterLvlLed.turnOff();
+  if(WaterLevelSensor.waterPresent());
+    //WaterLvlLed.turnOff();
   else {
     Serial.println("WARNING: Water Lvl Low (after watering, if applicable)");
     sleepMemory.currentWatersInTank = 0;
     currentWatersInTank = 0;
-    WaterLvlLed.turnOn();
+    //WaterLvlLed.turnOn();
   }
 
-  if(FertilizerLevelSensor.waterPresent())
-    FertilizerLvlLed.turnOff();
+  if(FertilizerLevelSensor.waterPresent());
+    //FertilizerLvlLed.turnOff();
   else {
     Serial.println("WARNING: Fertilizer Lvl Low (after watering, if applicable)");
     sleepMemory.currentFertilizersInTank = 0;
     currentFertilizersInTank = 0;
-    FertilizerLvlLed.turnOn();
+    //FertilizerLvlLed.turnOn();
   }
   
   Serial.println("******************************Water End******************************");

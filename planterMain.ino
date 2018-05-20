@@ -1,7 +1,7 @@
 /*
  * File: planterMain.ino
- * Rev:  0.5
- * Date: 05/17/2018
+ * Rev:  1.0
+ * Date: 05/19/2018
  * 
  * Portland State University ECE Capstone Project
  * IoT-Based Smart Planter
@@ -75,6 +75,18 @@
  *    Todo:
  *      1. planterMain.ino: Line 143: Update delay to 30 minutes
  *      2. Planter.h: Lines 57 & 58: Update number of waters/fertilizers
+ *      
+ *  Rev 1.0 05/19/2018
+ *  Sketch uses 433549 bytes (41%) of program storage space. Maximum is 1044464 bytes.
+ *  Global variables use 43148 bytes (52%) of dynamic memory, leaving 38772 bytes for local variables. Maximum is 81920 bytes.
+ *    Summary:
+ *      1. Added timestamp (last time it water in UTC) to json data
+ *      2. Commented out water level LEDs out as they are now hardware controlled
+ *      3. planterMain.ino: Line 143: Update delay to 30 minutes
+ *      4. Added updateDaysBetweenWaters as an argument in getJsonData()& sendServerUpdatedJSON() to correctly update daysBetweenWaters
+ *      5. Changed water() return type to int
+ *    Todo:
+ *      1. Planter.h: Lines 57 & 58: Update number of waters/fertilizers
  */
  
 #include "helperFunc.h"
@@ -121,12 +133,14 @@ void loop()
   Serial.println("WiFi connection test done");
 
   /* Water */
-  if(Planter.water()) {   
-    if(!sendServerUpdatedJSON())
+  int waterStatus = Planter.water();
+  if(waterStatus == 1) {   
+    if(sendServerUpdatedJSON(true))
       Serial.println("send not sucess");
-    else {
-      ; // Do nothing here
-    }
+  } else if (waterStatus == -1) {
+    Serial.println("moisture error. notify server");
+    if(sendServerUpdatedJSON(false))
+      Serial.println("send not sucess");
   }
   
   /* Server Communication*/
@@ -142,6 +156,6 @@ void loop()
   if (sleepMemory.demoMode) {
     delay(sleepMemory.demoFrequency*1e3);
   } else {
-    delay(30*1e3); // TODO 60*30
+    delay(1*1e3);
   }
 }

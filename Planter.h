@@ -1,7 +1,7 @@
 /*
  * File: Planter.h
- * Rev:  0.5
- * Date: 05/17/2018
+ * Rev:  1.0
+ * Date: 05/19/2018
  * 
  * Portland State University ECE Capstone Project
  * IoT-Based Smart Planter
@@ -83,13 +83,14 @@ typedef struct {
 } nvmData;
 
 extern nvmData sleepMemory;
+extern String getTime();
 
 class Planter {
   public:
     Planter();
     int configure(bool vacationModeIn, bool useFeritizerIn, int moistureLowerBoundInm, int vacationModeLength, bool demoMode, int demoFrequency);
-    bool water();
-    String getJsonData();
+    int water();
+    String getJsonData(bool updateDaysBetweenWaters);
 
     Led NetworkErrLed = Led(NETWORKLED_PIN);
 
@@ -107,8 +108,8 @@ class Planter {
     /* outputs */
     // LEDs
     //Led NetworkErrLed = Led(NETWORKLED_PIN); // moved to public
-    Led WaterLvlLed = Led(WATERLED_PIN);
-    Led FertilizerLvlLed = Led(FERTILIZERLED_PIN);
+    //Led WaterLvlLed = Led(WATERLED_PIN); // hw controlled
+    //Led FertilizerLvlLed = Led(FERTILIZERLED_PIN); // hw controlled
 
     // Pumps
     Pump WaterPump = Pump(WATERPUMP_PIN, WATER_TYPE);
@@ -152,5 +153,6 @@ class Planter {
     int daysBetweenWatersCounter;
     bool waterLvlLow;
     bool fertilizerLvlLow;
+    String prev_water;
 };
 
