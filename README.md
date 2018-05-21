@@ -19,6 +19,8 @@ Version: 1.8.5
 
     *x is the COM number to which the NodeMCU is connected. This can be found in Device Managers > Ports. Look for data entry "Silicon Labs CP210x USB to UART Bridge." If this is not displayed. Install the driver for CP210x.
     
+  4. Refer to WiFiManager Library section to install WiFiManager Library
+    
 ### CP210x Driver
 The driver for CP210x may not be automatically installed when connected to a computer. Verify that the device driver is properly loaded in Device Manager. If it is not automatically installed, the driver can be found here. https://www.silabs.com/products/development-tools/software/usb-to-uart-bridge-vcp-drivers
 
