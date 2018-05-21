@@ -7,14 +7,14 @@ Version: 1.8.5
 2. Go to Tools > Boards: xxx > Boards Manager... Install "esp 8266 by ESP8266 Community" version 2.4.1.
 3. Go to Sketch > Include Libraries > Library Manager. Install ArduinoJson by Benoit Blanchon Version 5.13.1
   a. Under Tool, make sure the following is selected:
-    Board: "NodeMCU 1.0 (ESP-12E Module)"
-    Flash Size: "4M (3M 3PIFFS)"
-    Debug port: "Disabled"
-    Debug Level: "None"
-    IwIP Variant: "v2 Lower Memory"
-    CPU Frequency: "80 MHz"
-    Upload Speed: "921600"
-    Erase Flash: "All Flash Contents"
+    -Board: "NodeMCU 1.0 (ESP-12E Module)"
+    -Flash Size: "4M (3M 3PIFFS)"
+    -Debug port: "Disabled"
+    -Debug Level: "None"
+    -IwIP Variant: "v2 Lower Memory"
+    -CPU Frequency: "80 MHz"
+    -Upload Speed: "921600"
+    -Erase Flash: "All Flash Contents"
     Port: "COMx*"
 
     *x is the COM number to which the NodeMCU is connected. This can be found in Device Managers > Ports. Look for data entry "Silicon Labs CP210x USB to UART Bridge." If this is not displayed. Install the driver for CP210x.
