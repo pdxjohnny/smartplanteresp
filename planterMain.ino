@@ -97,8 +97,15 @@ int configSinceLastUpdate;
 
 void setup() {
   Serial.begin(9600);
-  Serial.println("settig up...");
+  Serial.print("settig up...");
+  
+  WiFi.softAPdisconnect(true);
+  WiFi.disconnect(true);
+  ESP.eraseConfig();
+  //ESP.reset();
 
+  Serial.println("Done");
+  
   initialize();
 
   Serial.println("~GET CONFIG START~");
