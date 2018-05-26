@@ -134,17 +134,21 @@ void loop()
 
   /* Water */
   int waterStatus = Planter.water();
-  if(waterStatus == 1) {   
-    if(sendServerUpdatedJSON(true))
+  if(waterStatus == 1) {
+    getConfiguration();
+    saveData();   
+    if(!sendServerUpdatedJSON(true))
       Serial.println("send not sucess");
   } else if (waterStatus == -1) {
+    getConfiguration();
+    saveData();
     Serial.println("moisture error. notify server");
-    if(sendServerUpdatedJSON(false))
+    if(!sendServerUpdatedJSON(false))
       Serial.println("send not sucess");
   }
   
   /* Server Communication*/
-  if(configSinceLastUpdate == 8) {
+  if(configSinceLastUpdate >= 8) {
     //sendServerUpdatedJSON();
     getConfiguration();
     saveData();
