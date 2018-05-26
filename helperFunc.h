@@ -21,7 +21,7 @@
 
 extern nvmData sleepMemory;
 extern Planter Planter;
-extern WiFiManager wifiManager;
+//extern WiFiManager wifiManager;
 
 void saveData();
 int readData();

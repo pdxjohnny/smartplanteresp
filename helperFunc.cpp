@@ -80,7 +80,7 @@ void saveData() {
   json["demoFrequency"] = sleepMemory.demoFrequency;
 
   Serial.println("Saved sleepMemory to /config.json");
-  json.prettyPrintTo(Serial);
+  //json.prettyPrintTo(Serial);
   json.printTo(configFile);
   configFile.close();
 }
@@ -142,6 +142,7 @@ int readData() {
 
 // Connect to AP
 void apConnect(bool rst, int timeout) {
+  WiFiManager wifiManager;
   if(rst)
     wifiManager.resetSettings();
 
@@ -245,16 +246,18 @@ void getConfiguration() {
   // In other case, you can do root["time"].as<long>();
 
   Serial.println("Parsing JSON configuration");
+  Serial.print("vacationMode: ");
   Serial.println(vacationMode);
+  Serial.print("vacationModeLength: ");
   Serial.println(vacationModeLength);
+  Serial.print("useFeritizer: ");
   Serial.println(useFeritizer);
+  Serial.print("moistureLowerBound: ");
   Serial.println(moistureLowerBound);
-  Serial.println(daysBetweenWaters);
-  Serial.println(numberWatersInTank);
-  Serial.println(currentWatersInTank);
-  Serial.println(numberPumpRunsPerWater);
-  Serial.println(numberFertilizersInTank);
-  Serial.println(currentFertilizersInTank);
+  Serial.print("demoMode: ");
+  Serial.println(sleepMemory.demoMode);
+  Serial.print("demoFrequency: ");
+  Serial.println(sleepMemory.demoFrequency);
 
   client.stop();
 
@@ -279,7 +282,7 @@ void memoryCorrupted() {
 
 void wakeup() {
   Serial.println("Power restored. Getting configuration from server");
-  apConnect(false, 1);
+  apConnect(false, 10);
   getConfiguration();
   saveData();
 }

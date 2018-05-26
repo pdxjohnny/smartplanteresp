@@ -92,8 +92,13 @@
 #include "helperFunc.h"
 nvmData sleepMemory;
 class Planter Planter;
-WiFiManager wifiManager;
+//WiFiManager wifiManager;
 int configSinceLastUpdate;
+String mySSID;
+String myPASS;
+char SSIDArr[20];
+char PASSArr[20];
+int timeoutCnt;
 
 void setup() {
   Serial.begin(9600);
@@ -116,6 +121,20 @@ void setup() {
     wakeup();
   }
   configSinceLastUpdate = 0;
+
+  mySSID = WiFi.SSID();
+  myPASS = WiFi.psk();
+  timeoutCnt = 0;
+
+  Serial.print("SSID ");
+  //Serial.println(mySSID);
+  mySSID.toCharArray(SSIDArr, 20);
+  Serial.println(SSIDArr);
+  Serial.print("PASS ");
+  //Serial.println(myPASS);
+  myPASS.toCharArray(PASSArr, 20);
+  Serial.println(PASSArr);
+  
   Serial.println("~GET CONFIG END~");
 }
 
@@ -123,15 +142,26 @@ void loop()
 {
   Serial.println("loop");
   /* Network Error */
+
   if(WiFi.status() != WL_CONNECTED) {
-    Serial.println("WiFi is not connected. Attempting to connect");
+    Serial.print("WiFi is not connected. Attempting to connect");
     Planter.NetworkErrLed.turnOn();
-    apConnect(false, 1); // attempt to connect to ap w/o erasing SSID and PW
+    timeoutCnt = 0;
+    WiFi.persistent(false);
+    WiFi.mode(WIFI_OFF);   // this is a temporary line, to be removed after SDK update to 1.5.4
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(SSIDArr, PASSArr);
     
-    if(WiFi.status() != WL_CONNECTED) { // try this again
-      Serial.println("WiFi is still not connected.");
-    } else {
-      Planter.NetworkErrLed.turnOff(); 
+    while(WiFi.status() != WL_CONNECTED && timeoutCnt < 20) {
+      Serial.print(".");
+      //WiFi.begin(SSIDArr, PASSArr);
+      delay(500);
+      ++timeoutCnt;
+    }
+    Serial.println("");
+    if(WiFi.status() == WL_CONNECTED) {
+      Serial.println("WiFi Reconnected");
+      Planter.NetworkErrLed.turnOff();
     }
   } else {
     Planter.NetworkErrLed.turnOff();
@@ -164,6 +194,7 @@ void loop()
   configSinceLastUpdate += 1;
 
   /* Delay */
+  //WiFi.disconnect(true);
   if (sleepMemory.demoMode) {
     delay(sleepMemory.demoFrequency*1e3);
   } else {

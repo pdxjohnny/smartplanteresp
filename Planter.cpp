@@ -130,6 +130,17 @@ int Planter::water() {
     moistureError = true;
     Serial.println("ERROR: Moisture sensor");
     Serial.println("******************************Water Exit******************************");
+    /* currentWatersInTank & currentFertilizersInTank Reset */
+    // Reset waters in tank if water level was low and now it's high
+    if(waterLvlLow && WaterLevelSensor.waterPresent()) {
+      currentWatersInTank = WATER_TANK_CAP;
+      Serial.println("INFO: currentWatersInTank reset");
+    }
+    
+    if(fertilizerLvlLow && FertilizerLevelSensor.waterPresent()) {
+      currentFertilizersInTank = FERTILIZER_TANK_CAP;
+      Serial.println("INFO: currentFertilizersInTank reset");
+    }
     return -1;
   } else {
     moistureError = false;
