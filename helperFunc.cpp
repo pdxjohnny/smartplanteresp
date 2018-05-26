@@ -200,7 +200,7 @@ void getConfiguration() {
     return;
   }
 
-  String url = "/~jsa3/smartplanter/api/sync/";
+  String url = "/~kuanju/smartplanter/api/sync/";
 
   client.print(String("GET ") + url + " HTTP/1.1\r\n" +
                "Host: " + host + "\r\n" +
@@ -309,7 +309,7 @@ bool sendServerUpdatedJSON(bool updateDaysBetweenWaters) {
   }
   Serial.println("sendServerUpdatedJSON: Verification OK");
 
-  String url = "/~jsa3/smartplanter/api/sync/";
+  String url = "/~kuanju/smartplanter/api/sync/";
 
   Serial.println("sendServerUpdatedJSON: Planter.getDataJson");
   String data = Planter.getJsonData(updateDaysBetweenWaters);
