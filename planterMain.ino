@@ -1,7 +1,7 @@
 /*
  * File: planterMain.ino
- * Rev:  1.0
- * Date: 05/19/2018
+ * Rev:  1.1
+ * Date: 05/26/2018
  * 
  * Portland State University ECE Capstone Project
  * IoT-Based Smart Planter
@@ -87,6 +87,18 @@
  *      5. Changed water() return type to int
  *    Todo:
  *      1. Planter.h: Lines 57 & 58: Update number of waters/fertilizers
+ *      
+ *  Rev. 1.1 05/26/2018
+ *  Sketch uses 433705 bytes (41%) of program storage space. Maximum is 1044464 bytes.
+ *  Global variables use 43080 bytes (52%) of dynamic memory, leaving 38840 bytes for local variables. Maximum is 81920 bytes.
+ *    Summary:
+ *      1. Reduced the possibility of getting stack trace
+ *      2. Updated when to get config and send data
+ *      3. Uses WiFiManager only for initialization
+ *      4. Checks water levels when moisture sensor error is detected
+ *    Todo:
+ *      1. Planter.h: Lines 57 & 58: Update number of waters/fertilizers
+ *  
  */
  
 #include "helperFunc.h"
@@ -185,9 +197,10 @@ void loop()
   }
   
   /* Server Communication*/
-  if(configSinceLastUpdate >= 8) {
-    //sendServerUpdatedJSON();
+  if(configSinceLastUpdate >= 7) {
+    Serial.println("Time to get updates");
     getConfiguration();
+    sendServerUpdatedJSON(false);
     saveData();
     configSinceLastUpdate = 0;
   }
@@ -198,6 +211,6 @@ void loop()
   if (sleepMemory.demoMode) {
     delay(sleepMemory.demoFrequency*1e3);
   } else {
-    delay(1*1e3);
+    delay(30*60*1e3);
   }
 }
