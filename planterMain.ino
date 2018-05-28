@@ -105,7 +105,7 @@
  *    Sumamry:
  *      1. Saved WiFi credential in sleepMemory to allow the planter to be reconnected after power loss
  *      2. Reads constant strings from flash to prevent memory saturation
- *      3. Added freeMemory() function to prevent memory saturation
+ *      3. Added freeMemory() function to observe amount of free memory
  *      4. Statically allocates json buffer to prevent memory saturation
  *      5. Moisture lower bound in vacation mode will in the range of [moistureLowerBound, moistureLowerBound/2]
  *      6. Removed WiFimanager in wakeup() to prevent token from being overwritten (v 1.2.1)
