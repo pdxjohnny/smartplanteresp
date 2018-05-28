@@ -40,7 +40,7 @@ Planter::Planter() {
 
   moistureError = false;
 
-  daysBetweenWatersCounter = -1;
+  daysBetweenWatersCounter = 0;
   waterLvlLow = false;
   fertilizerLvlLow = false;
   prev_water = "NODATA";
@@ -64,49 +64,51 @@ String Planter::getJsonData(bool updateDaysBetweenWaters) {
   if(updateDaysBetweenWaters)
     daysBetweenWaters = daysBetweenWatersCounter/48.0;
 
-  StaticJsonBuffer<500> jsonBuffer;
+  //StaticJsonBuffer<500> jsonBuffer;
+  //DynamicJsonBuffer jsonBuffer;
+  jsonBuffer.clear();
   JsonObject& root = jsonBuffer.createObject();
-  JsonArray& vacationModeArr = root.createNestedArray("vacationMode");
-  JsonArray& useFeritizerArr = root.createNestedArray("useFeritizer");
-  JsonArray& moistureLowerBoundArr = root.createNestedArray("moistureLowerBound");
-  JsonArray& numberWatersInTankArr = root.createNestedArray("numberWatersInTank");
-  JsonArray& numberFertilizersInTankArr = root.createNestedArray("numberFertilizersInTank");
-  JsonArray& currentWatersInTankArr = root.createNestedArray("currentWatersInTank");
-  JsonArray& currentFertilizersInTankArr = root.createNestedArray("currentFertilizersInTank");
-  JsonArray& daysBetweenWatersArr = root.createNestedArray("daysBetweenWaters");
-  JsonArray& numberFertilizersUsedArr = root.createNestedArray("numberFertilizersUsed");
-  JsonArray& vacationModeLengthArr = root.createNestedArray("vacationModeLength");
-  JsonArray& temperatureArr = root.createNestedArray("temperature");
-  JsonArray& lightArr = root.createNestedArray("light");
-  JsonArray& moistureArr = root.createNestedArray("moisture");
-  JsonArray& demoModeArr = root.createNestedArray("demoMode");
-  JsonArray& demoFrequencyeArr = root.createNestedArray("demoFrequency");
-  JsonArray& moistureErrorArr = root.createNestedArray("moistureError");
-  JsonArray& timeStamp = root.createNestedArray("timeStamp");
+  JsonArray& vacationModeArr = root.createNestedArray(F("vacationMode"));
+  JsonArray& useFeritizerArr = root.createNestedArray(F("useFeritizer"));
+  JsonArray& moistureLowerBoundArr = root.createNestedArray(F("moistureLowerBound"));
+  JsonArray& numberWatersInTankArr = root.createNestedArray(F("numberWatersInTank"));
+  JsonArray& numberFertilizersInTankArr = root.createNestedArray(F("numberFertilizersInTank"));
+  JsonArray& currentWatersInTankArr = root.createNestedArray(F("currentWatersInTank"));
+  JsonArray& currentFertilizersInTankArr = root.createNestedArray(F("currentFertilizersInTank"));
+  JsonArray& daysBetweenWatersArr = root.createNestedArray(F("daysBetweenWaters"));
+  JsonArray& numberFertilizersUsedArr = root.createNestedArray(F("numberFertilizersUsed"));
+  JsonArray& vacationModeLengthArr = root.createNestedArray(F("vacationModeLength"));
+  JsonArray& temperatureArr = root.createNestedArray(F("temperature"));
+  JsonArray& lightArr = root.createNestedArray(F("light"));
+  JsonArray& moistureArr = root.createNestedArray(F("moisture"));
+  JsonArray& demoModeArr = root.createNestedArray(F("demoMode"));
+  JsonArray& demoFrequencyeArr = root.createNestedArray(F("demoFrequency"));
+  JsonArray& moistureErrorArr = root.createNestedArray(F("moistureError"));
+  JsonArray& timeStamp = root.createNestedArray(F("timeStamp"));
   
-  Serial.println("json data");
-  root["vacationMode"] = vacationMode;
-  root["useFeritizer"] = useFeritizer;
-  root["moistureLowerBound"] = moistureLowerBound;
-  root["numberWatersInTank"] = numberWatersInTank;
-  root["numberFertilizersInTank"] = numberFertilizersInTank;
-  root["currentWatersInTank"] = currentWatersInTank;
-  root["currentFertilizersInTank"] = currentFertilizersInTank;
-  root["daysBetweenWaters"] = daysBetweenWaters;
-  root["numberPumpRunsPerWater"] = numberPumpRunsPerWater;
-  root["vacationModeLength"] = vacationModeLength;
-  root["demoMode"] = demoMode;
-  root["demoFrequency"] = demoFrequency;
-  root["temperature"] = temperature;
-  root["light"] = light;
-  root["moisture"] = moisture;
-  root["moistureError"] = moistureError;
+  Serial.println(F("json data"));
+  root[F("vacationMode")] = vacationMode;
+  root[F("useFeritizer")] = useFeritizer;
+  root[F("moistureLowerBound")] = moistureLowerBound;
+  root[F("numberWatersInTank")] = numberWatersInTank;
+  root[F("numberFertilizersInTank")] = numberFertilizersInTank;
+  root[F("currentWatersInTank")] = currentWatersInTank;
+  root[F("currentFertilizersInTank")] = currentFertilizersInTank;
+  root[F("daysBetweenWaters")] = daysBetweenWaters;
+  root[F("numberPumpRunsPerWater")] = numberPumpRunsPerWater;
+  root[F("vacationModeLength")] = vacationModeLength;
+  root[F("demoMode")] = demoMode;
+  root[F("demoFrequency")] = demoFrequency;
+  root[F("temperature")] = temperature;
+  root[F("light")] = light;
+  root[F("moisture")] = moisture;
+  root[F("moistureError")] = moistureError;
 
   if(updateDaysBetweenWaters)
     prev_water = getTime();
   
   root["timeStamp"] = prev_water;
-  Serial.println("Printing JSON Data");
+  Serial.println(F("Printing JSON Data"));
   root.prettyPrintTo(Serial);
 
   // Store Json data to a string
@@ -124,22 +126,22 @@ int Planter::water() {
   int localMoistureLowerBound;
   bool waterLvl, fertilizerLvl;
 
-  Serial.println("******************************Water Start******************************");
+  Serial.println(F("******************************Water Start******************************"));
   /* Diagnostic */
   if(moisture == MoistureSensor.getMoisture() && MoistureSensor.getMoisture() == 0) {
     moistureError = true;
-    Serial.println("ERROR: Moisture sensor");
-    Serial.println("******************************Water Exit******************************");
+    Serial.println(F("ERROR: Moisture sensor"));
+    Serial.println(F("******************************Water Exit******************************"));
     /* currentWatersInTank & currentFertilizersInTank Reset */
     // Reset waters in tank if water level was low and now it's high
     if(waterLvlLow && WaterLevelSensor.waterPresent()) {
       currentWatersInTank = WATER_TANK_CAP;
-      Serial.println("INFO: currentWatersInTank reset");
+      Serial.println(F("INFO: currentWatersInTank reset"));
     }
     
     if(fertilizerLvlLow && FertilizerLevelSensor.waterPresent()) {
       currentFertilizersInTank = FERTILIZER_TANK_CAP;
-      Serial.println("INFO: currentFertilizersInTank reset");
+      Serial.println(F("INFO: currentFertilizersInTank reset"));
     }
     return -1;
   } else {
@@ -150,40 +152,44 @@ int Planter::water() {
   // Reset waters in tank if water level was low and now it's high
   if(waterLvlLow && WaterLevelSensor.waterPresent()) {
     currentWatersInTank = WATER_TANK_CAP;
-    Serial.println("INFO: currentWatersInTank reset");
+    Serial.println(F("INFO: currentWatersInTank reset"));
   }
     
   if(fertilizerLvlLow && FertilizerLevelSensor.waterPresent()) {
     currentFertilizersInTank = FERTILIZER_TANK_CAP;
-    Serial.println("INFO: currentFertilizersInTank reset");
+    Serial.println(F("INFO: currentFertilizersInTank reset"));
   }
 
   /* Adjust moisture lower bound */
   if(vacationMode) {
-    Serial.println("INFO: Vacation mode");
+    Serial.println(F("INFO: Vacation mode"));
     if(daysBetweenWaters == -1 || daysBetweenWaters == 0) {// No data
-      Serial.println("ERROR: daysBetweenWaters not valid.");
+      Serial.println(F("ERROR: daysBetweenWaters not valid."));
       localMoistureLowerBound = moistureLowerBound * 0.8;
     }
     else {
-      Serial.println("INFO: Updating localMoistureLowerBound...");
-      Serial.print("INFO: Vaction Mode Length: ");
+      Serial.println(F("INFO: Updating localMoistureLowerBound..."));
+      Serial.print(F("INFO: Vaction Mode Length: "));
       Serial.print(vacationModeLength);
-      Serial.print("; Days between waters: ");
+      Serial.print(F("; Days between waters: "));
       Serial.print(daysBetweenWaters);
-      Serial.print("; Current waters in tank: ");
+      Serial.print(F("; Current waters in tank: "));
       Serial.println(currentWatersInTank);
       if(vacationModeLength*7/daysBetweenWaters > currentWatersInTank) { // Waters needed > Waters Remained
-        Serial.println("INFO: Waters needed > Waters Remained");
+        Serial.println(F("INFO: Waters needed > Waters Remained"));
         // currentWatersInTank/vacationModeLength/7 - daysBetweenWaters = minDaysBetweenWaters - daysBetweenWaters
         localMoistureLowerBound = moistureLowerBound - moistureLowerBound/2 * (currentWatersInTank/vacationModeLength/7 - daysBetweenWaters);
+        if(localMoistureLowerBound < moistureLowerBound/2)
+          localMoistureLowerBound = moistureLowerBound/2;
+        else if(localMoistureLowerBound > moistureLowerBound)
+          localMoistureLowerBound = moistureLowerBound;
       } else {
-        Serial.println("INFO: Waters needed < Waters Remained. No need to adjust bound");
+        Serial.println(F("INFO: Waters needed < Waters Remained. No need to adjust bound"));
         localMoistureLowerBound = moistureLowerBound;
       }
     }
   } else {
-    Serial.println("INFO: Regular mode");
+    Serial.println(F("INFO: Regular mode"));
     localMoistureLowerBound = moistureLowerBound;
   }
   
@@ -191,35 +197,35 @@ int Planter::water() {
   light = LightSensor.getIntensity();
   moisture = MoistureSensor.getMoisture();
   // temperature
-  Serial.print("INFO: Sensors - light: ");
+  Serial.print(F("INFO: Sensors - light: "));
   Serial.print(light);
-  Serial.print(" moisture: ");
+  Serial.print(F(" moisture: "));
   Serial.print(moisture);
-  Serial.println("%");
+  Serial.println(F("%"));
 
   daysBetweenWatersCounter += 1;
 
   /* See if watering is needed */
-  Serial.print("INFO: Moisture - Current: ");
+  Serial.print(F("INFO: Moisture - Current: "));
   Serial.print(moisture);
-  Serial.print(" Lower Bound: ");
+  Serial.print(F(" Lower Bound: "));
   Serial.println(localMoistureLowerBound);
   
   if(moisture < localMoistureLowerBound) {
-    Serial.println("INFO: Water required");
+    Serial.println(F("INFO: Water required"));
     if(WaterLevelSensor.waterPresent()) {
-      Serial.print("INFO: Water Lvl OK: watering... ");
+      Serial.print(F("INFO: Water Lvl OK: watering... "));
       WaterPump.pumpWater();
       numberPumpRunsPerWater = 1;
       currentWatersInTank -= 1;
       ret = 1;
-      Serial.println("Done");
+      Serial.println(F("Done"));
 
       // Only attempt to fertilize if there was enough water
       if(FertilizerLevelSensor.waterPresent()) {
-        Serial.print("INFO: Fertilizer Lvl OK: fertilizing... ");
+        Serial.print(F("INFO: Fertilizer Lvl OK: fertilizing... "));
         Serial.print(fertilizersToUseArr[fertilizerPtr]);
-        Serial.println(" fertilizers");
+        Serial.println(F(" fertilizers"));
         for(int i=0; i<fertilizersToUseArr[fertilizerPtr] && FertilizerLevelSensor.waterPresent(); ++i) {
           FertilizerPump.pumpWater();
           currentFertilizersInTank -= 1;
@@ -229,20 +235,20 @@ int Planter::water() {
         if(fertilizerPtr >= 6)
           fertilizerPtr = 0;
 
-        Serial.print("INFO: Updated fertilizerPtr = ");
+        Serial.print(F("INFO: Updated fertilizerPtr = "));
         Serial.println(fertilizerPtr);
 
-        Serial.print("INFO: Next fertilizersToUse = ");
+        Serial.print(F("INFO: Next fertilizersToUse = "));
         Serial.println(fertilizersToUseArr[fertilizerPtr]);
           
-        Serial.println("INFO: Fertilizing done");
+        Serial.println(F("INFO: Fertilizing done"));
       }
       else {
-        Serial.println("WARNING: Fertilizer Lvl Low");
+        Serial.println(F("WARNING: Fertilizer Lvl Low"));
       }
     }
     else {
-      Serial.println("WARNING: Water Lvl Low");
+      Serial.println(F("WARNING: Water Lvl Low"));
       currentWatersInTank = 0;
     }
   }
@@ -257,7 +263,7 @@ int Planter::water() {
   if(WaterLevelSensor.waterPresent());
     //WaterLvlLed.turnOff();
   else {
-    Serial.println("WARNING: Water Lvl Low (after watering, if applicable)");
+    Serial.println(F("WARNING: Water Lvl Low (after watering, if applicable)"));
     sleepMemory.currentWatersInTank = 0;
     currentWatersInTank = 0;
     //WaterLvlLed.turnOn();
@@ -266,13 +272,13 @@ int Planter::water() {
   if(FertilizerLevelSensor.waterPresent());
     //FertilizerLvlLed.turnOff();
   else {
-    Serial.println("WARNING: Fertilizer Lvl Low (after watering, if applicable)");
+    Serial.println(F("WARNING: Fertilizer Lvl Low (after watering, if applicable)"));
     sleepMemory.currentFertilizersInTank = 0;
     currentFertilizersInTank = 0;
     //FertilizerLvlLed.turnOn();
   }
   
-  Serial.println("******************************Water End******************************");
+  Serial.println(F("******************************Water End******************************"));
   return ret;
 }
 

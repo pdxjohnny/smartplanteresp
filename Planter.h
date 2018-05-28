@@ -80,10 +80,14 @@ typedef struct {
 
   bool demoMode;
   int demoFrequency;
+
+  char mySSID[20];
+  char myPASS[20];
 } nvmData;
 
 extern nvmData sleepMemory;
 extern String getTime();
+extern StaticJsonBuffer<1500> jsonBuffer;
 
 class Planter {
   public:

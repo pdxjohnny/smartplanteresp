@@ -1,7 +1,7 @@
 /*
  * File: planterMain.ino
- * Rev:  1.1
- * Date: 05/26/2018
+ * Rev:  1.2
+ * Date: 05/27/2018
  * 
  * Portland State University ECE Capstone Project
  * IoT-Based Smart Planter
@@ -102,30 +102,30 @@
  */
  
 #include "helperFunc.h"
+#define VERSION "1.1.2"
 nvmData sleepMemory;
 class Planter Planter;
 //WiFiManager wifiManager;
 int configSinceLastUpdate;
-String mySSID;
-String myPASS;
-char SSIDArr[20];
-char PASSArr[20];
 int timeoutCnt;
+StaticJsonBuffer<1500> jsonBuffer;
 
 void setup() {
   Serial.begin(9600);
-  Serial.print("settig up...");
+  Serial.print(F("Version: "));
+  Serial.println(VERSION);
+  Serial.println(F("settig up..."));
   
   WiFi.softAPdisconnect(true);
   WiFi.disconnect(true);
   ESP.eraseConfig();
   //ESP.reset();
 
-  Serial.println("Done");
+  Serial.println(F("Done"));
   
   initialize();
 
-  Serial.println("~GET CONFIG START~");
+  Serial.println(F("~GET CONFIG START~"));
   if(sleepMemory.magicNumber != MAGIC_NUMBER) { // Data read from memory is not valid
     memoryCorrupted();
   }
@@ -133,11 +133,9 @@ void setup() {
     wakeup();
   }
   configSinceLastUpdate = 0;
-
-  mySSID = WiFi.SSID();
-  myPASS = WiFi.psk();
   timeoutCnt = 0;
 
+/*
   Serial.print("SSID ");
   //Serial.println(mySSID);
   mySSID.toCharArray(SSIDArr, 20);
@@ -146,62 +144,64 @@ void setup() {
   //Serial.println(myPASS);
   myPASS.toCharArray(PASSArr, 20);
   Serial.println(PASSArr);
-  
-  Serial.println("~GET CONFIG END~");
+*/  
+  Serial.println(F("~GET CONFIG END~"));
 }
 
 void loop() 
 {
-  Serial.println("loop");
+  Serial.println(F("loop"));
   /* Network Error */
 
   if(WiFi.status() != WL_CONNECTED) {
+    //Serial.println(SSIDArr);
+    //Serial.println(PASSArr);
     Serial.print("WiFi is not connected. Attempting to connect");
-    Planter.NetworkErrLed.turnOn();
+    
     timeoutCnt = 0;
     WiFi.persistent(false);
     WiFi.mode(WIFI_OFF);   // this is a temporary line, to be removed after SDK update to 1.5.4
     WiFi.mode(WIFI_STA);
-    WiFi.begin(SSIDArr, PASSArr);
+    WiFi.begin(sleepMemory.mySSID, sleepMemory.myPASS);
     
     while(WiFi.status() != WL_CONNECTED && timeoutCnt < 20) {
-      Serial.print(".");
+      Serial.print(F("."));
       //WiFi.begin(SSIDArr, PASSArr);
       delay(500);
       ++timeoutCnt;
     }
     Serial.println("");
     if(WiFi.status() == WL_CONNECTED) {
-      Serial.println("WiFi Reconnected");
+      Serial.println(F("WiFi Reconnected"));
       Planter.NetworkErrLed.turnOff();
-    }
+    } else
+      Planter.NetworkErrLed.turnOn();
+      
   } else {
     Planter.NetworkErrLed.turnOff();
-    Serial.println("WiFi connection OK");
+    Serial.println(F("WiFi connection OK"));
   }
-  Serial.println("WiFi connection test done");
+  Serial.println(F("WiFi connection test done"));
 
   /* Water */
   int waterStatus = Planter.water();
   if(waterStatus == 1) {
     getConfiguration();
-    saveData();   
     if(!sendServerUpdatedJSON(true))
-      Serial.println("send not sucess");
+      Serial.println(F("send not sucess"));
   } else if (waterStatus == -1) {
     getConfiguration();
-    saveData();
-    Serial.println("moisture error. notify server");
+    Serial.println(F("moisture error. notify server"));
     if(!sendServerUpdatedJSON(false))
-      Serial.println("send not sucess");
+      Serial.println(F("send not sucess"));
   }
   
   /* Server Communication*/
   if(configSinceLastUpdate >= 7) {
-    Serial.println("Time to get updates");
+    Serial.println(F("Time to get updates"));
     getConfiguration();
     sendServerUpdatedJSON(false);
-    saveData();
+    //saveData();
     configSinceLastUpdate = 0;
   }
   configSinceLastUpdate += 1;
@@ -211,6 +211,6 @@ void loop()
   if (sleepMemory.demoMode) {
     delay(sleepMemory.demoFrequency*1e3);
   } else {
-    delay(30*60*1e3);
+    delay(1*1e3);
   }
 }
