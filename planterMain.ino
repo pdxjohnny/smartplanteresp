@@ -119,7 +119,7 @@
 #include "helperFunc.h"
 #include "MemoryFree.h"
 
-#define VERSION "1.2"
+#define VERSION "1.2.2"
 nvmData sleepMemory;
 class Planter Planter;
 //WiFiManager wifiManager;
