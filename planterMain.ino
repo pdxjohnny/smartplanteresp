@@ -1,6 +1,6 @@
 /*
  * File: planterMain.ino
- * Rev:  1.2
+ * Rev:  1.2.1
  * Date: 05/27/2018
  * 
  * Portland State University ECE Capstone Project
@@ -108,6 +108,7 @@
  *      3. Added freeMemory() function to prevent memory saturation
  *      4. Statically allocates json buffer to prevent memory saturation
  *      5. Moisture lower bound in vacation mode will in the range of [moistureLowerBound, moistureLowerBound/2]
+ *      6. Removed WiFimanager in wakeup() to prevent token from being overwritten (v 1.2.1)
  *      
  *    Todo:
  *      1. Planter.h: Lines 57 & 58: Update number of waters/fertilizers
@@ -122,7 +123,6 @@ nvmData sleepMemory;
 class Planter Planter;
 //WiFiManager wifiManager;
 int configSinceLastUpdate;
-int timeoutCnt;
 StaticJsonBuffer<1500> jsonBuffer;
 
 unsigned int __heap_start;
@@ -152,7 +152,6 @@ void setup() {
     wakeup();
   }
   configSinceLastUpdate = 0;
-  timeoutCnt = 0;
 
   Serial.println(F("~GET CONFIG END~"));
 }
@@ -160,37 +159,7 @@ void setup() {
 void loop() 
 {
   Serial.println(F("loop"));
-  /* Network Error */
-
-  if(WiFi.status() != WL_CONNECTED) {
-    //Serial.println(SSIDArr);
-    //Serial.println(PASSArr);
-    Serial.print("WiFi is not connected. Attempting to connect");
-    
-    timeoutCnt = 0;
-    WiFi.persistent(false);
-    WiFi.mode(WIFI_OFF);   // this is a temporary line, to be removed after SDK update to 1.5.4
-    WiFi.mode(WIFI_STA);
-    WiFi.begin(sleepMemory.mySSID, sleepMemory.myPASS);
-    
-    while(WiFi.status() != WL_CONNECTED && timeoutCnt < 20) {
-      Serial.print(F("."));
-      //WiFi.begin(SSIDArr, PASSArr);
-      delay(500);
-      ++timeoutCnt;
-    }
-    Serial.println("");
-    if(WiFi.status() == WL_CONNECTED) {
-      Serial.println(F("WiFi Reconnected"));
-      Planter.NetworkErrLed.turnOff();
-    } else
-      Planter.NetworkErrLed.turnOn();
-      
-  } else {
-    Planter.NetworkErrLed.turnOff();
-    Serial.println(F("WiFi connection OK"));
-  }
-  Serial.println(F("WiFi connection test done"));
+  wificonnect();
 
   /* Water */
   int waterStatus = Planter.water();
@@ -222,9 +191,12 @@ void loop()
   //WiFi.disconnect(true);
   //Serial.print(F("freeMemory()="));
   //Serial.println(freeMemory());
+  Serial.print(F("Sleeping for: "));
   if (sleepMemory.demoMode) {
+    Serial.println(sleepMemory.demoFrequency);
     delay(sleepMemory.demoFrequency*1e3);
   } else {
+    Serial.println(F("30 minutes"));
     delay(1*1e3);
   }
 }

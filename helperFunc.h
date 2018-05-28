@@ -1,6 +1,6 @@
 /*
  * File: helperFunc.h
- * Rev:  1.2
+ * Rev:  1.2.1
  * Date: 05/27/2018
  * Description: 
  * 
@@ -38,3 +38,4 @@ void memoryCorrupted();
 void wakeup();
 bool sendServerUpdatedJSON(bool updateDaysBetweenWaters);
 String getTime();
+void wificonnect();

@@ -1,6 +1,6 @@
 /*
  * File: helperFunc.cpp
- * Rev:  1.2
+ * Rev:  1.2.1
  * Date: 05/27/2018
  * 
  * Portland State University ECE Capstone Project
@@ -304,7 +304,7 @@ void memoryCorrupted() {
 
 void wakeup() {
   Serial.println(F("Power restored. Getting configuration from server"));
-  apConnect(false, 10);
+  wificonnect();
   getConfiguration();
   //saveData();
 }
@@ -425,4 +425,37 @@ String getTime(){
   Serial.println(F("Getting timestamp Done"));
 
   return line;
+}
+
+void wificonnect() {
+  int timeoutCnt;
+  if(WiFi.status() != WL_CONNECTED) {
+    //Serial.println(SSIDArr);
+    //Serial.println(PASSArr);
+    Serial.print("WiFi is not connected. Attempting to connect");
+
+    timeoutCnt = 0;
+    WiFi.persistent(false);
+    WiFi.mode(WIFI_OFF);   // this is a temporary line, to be removed after SDK update to 1.5.4
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(sleepMemory.mySSID, sleepMemory.myPASS);
+    
+    while(WiFi.status() != WL_CONNECTED && timeoutCnt < 20) {
+      Serial.print(F("."));
+      //WiFi.begin(SSIDArr, PASSArr);
+      delay(500);
+      ++timeoutCnt;
+    }
+    Serial.println("");
+    if(WiFi.status() == WL_CONNECTED) {
+      Serial.println(F("WiFi Reconnected"));
+      Planter.NetworkErrLed.turnOff();
+    } else
+      Planter.NetworkErrLed.turnOn();
+      
+  } else {
+    Planter.NetworkErrLed.turnOff();
+    Serial.println(F("WiFi connection OK"));
+  }
+  Serial.println(F("WiFi connection test done"));
 }
