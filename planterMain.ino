@@ -1,7 +1,7 @@
 /*
  * File: planterMain.ino
- * Rev:  1.2.1
- * Date: 05/27/2018
+ * Rev:  1.2.3
+ * Date: 05/28/2018
  * 
  * Portland State University ECE Capstone Project
  * IoT-Based Smart Planter
@@ -109,7 +109,8 @@
  *      4. Statically allocates json buffer to prevent memory saturation
  *      5. Moisture lower bound in vacation mode will in the range of [moistureLowerBound, moistureLowerBound/2]
  *      6. Removed WiFimanager in wakeup() to prevent token from being overwritten (v 1.2.1)
- *      7. Reads water levels before return from water() when there is moisture error (v1.2.2)
+ *      7. Reads water levels before return from water() when there is moisture error (v 1.2.2)
+ *      8. Added default configuration if not able to fetch from server (v 1.2.3)
  *      
  *    Todo:
  *      1. Planter.h: Lines 57 & 58: Update number of waters/fertilizers
@@ -119,7 +120,7 @@
 #include "helperFunc.h"
 #include "MemoryFree.h"
 
-#define VERSION "1.2.2"
+#define VERSION "1.2.3"
 nvmData sleepMemory;
 class Planter Planter;
 //WiFiManager wifiManager;

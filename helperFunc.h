@@ -1,7 +1,7 @@
 /*
  * File: helperFunc.h
- * Rev:  1.2.1
- * Date: 05/27/2018
+ * Rev:  1.2.3
+ * Date: 05/28/2018
  * Description: 
  * 
  * Portland State University ECE Capstone Project

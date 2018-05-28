@@ -1,7 +1,7 @@
 /*
  * File: helperFunc.cpp
- * Rev:  1.2.1
- * Date: 05/27/2018
+ * Rev:  1.2.3
+ * Date: 05/28/2018
  * 
  * Portland State University ECE Capstone Project
  * IoT-Based Smart Planter
@@ -298,6 +298,7 @@ void memoryCorrupted() {
   Serial.print(F("sleepmemory mySSID:"));
   Serial.println(sleepMemory.mySSID);
   Serial.println(sleepMemory.myPASS);
+  Planter.configure(0, 0, 40, 2, 1, 15);
   getConfiguration();
   //saveData();
 }
@@ -305,6 +306,7 @@ void memoryCorrupted() {
 void wakeup() {
   Serial.println(F("Power restored. Getting configuration from server"));
   wificonnect();
+  Planter.configure(0, 0, 40, 2, 1, 15);
   getConfiguration();
   //saveData();
 }

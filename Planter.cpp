@@ -1,7 +1,7 @@
 /*
  * File: Planter.cpp
- * Rev:  1.2
- * Date: 05/27/2018
+ * Rev:  1.2.3
+ * Date: 05/28/2018
  * 
  * Portland State University ECE Capstone Project
  * IoT-Based Smart Planter
