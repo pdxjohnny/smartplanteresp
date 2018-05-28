@@ -98,17 +98,36 @@
  *      4. Checks water levels when moisture sensor error is detected
  *    Todo:
  *      1. Planter.h: Lines 57 & 58: Update number of waters/fertilizers
+ *      
+ *  Rev 1.2 05/27/2018
+ *  Sketch uses 435681 bytes (41%) of program storage space. Maximum is 1044464 bytes.
+ *  Global variables use 41304 bytes (50%) of dynamic memory, leaving 40616 bytes for local variables. Maximum is 81920 bytes.
+ *    Sumamry:
+ *      1. Saved WiFi credential in sleepMemory to allow the planter to be reconnected after power loss
+ *      2. Reads constant strings from flash to prevent memory saturation
+ *      3. Added freeMemory() function to prevent memory saturation
+ *      4. Statically allocates json buffer to prevent memory saturation
+ *      5. Moisture lower bound in vacation mode will in the range of [moistureLowerBound, moistureLowerBound/2]
+ *      
+ *    Todo:
+ *      1. Planter.h: Lines 57 & 58: Update number of waters/fertilizers
  *  
  */
  
 #include "helperFunc.h"
-#define VERSION "1.1.2"
+#include "MemoryFree.h"
+
+#define VERSION "1.2"
 nvmData sleepMemory;
 class Planter Planter;
 //WiFiManager wifiManager;
 int configSinceLastUpdate;
 int timeoutCnt;
 StaticJsonBuffer<1500> jsonBuffer;
+
+unsigned int __heap_start;
+void *__brkval;
+struct __freelist *__flp;
 
 void setup() {
   Serial.begin(9600);
@@ -135,16 +154,6 @@ void setup() {
   configSinceLastUpdate = 0;
   timeoutCnt = 0;
 
-/*
-  Serial.print("SSID ");
-  //Serial.println(mySSID);
-  mySSID.toCharArray(SSIDArr, 20);
-  Serial.println(SSIDArr);
-  Serial.print("PASS ");
-  //Serial.println(myPASS);
-  myPASS.toCharArray(PASSArr, 20);
-  Serial.println(PASSArr);
-*/  
   Serial.println(F("~GET CONFIG END~"));
 }
 
@@ -203,11 +212,16 @@ void loop()
     sendServerUpdatedJSON(false);
     //saveData();
     configSinceLastUpdate = 0;
+
+    Serial.print(F("freeMemory()="));
+    Serial.println(freeMemory());
   }
   configSinceLastUpdate += 1;
 
   /* Delay */
   //WiFi.disconnect(true);
+  //Serial.print(F("freeMemory()="));
+  //Serial.println(freeMemory());
   if (sleepMemory.demoMode) {
     delay(sleepMemory.demoFrequency*1e3);
   } else {
