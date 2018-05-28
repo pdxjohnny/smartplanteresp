@@ -137,11 +137,17 @@ int Planter::water() {
     if(waterLvlLow && WaterLevelSensor.waterPresent()) {
       currentWatersInTank = WATER_TANK_CAP;
       Serial.println(F("INFO: currentWatersInTank reset"));
+    } else if(!WaterLevelSensor.waterPresent()) {
+      currentWatersInTank = 0;
+      waterLvlLow = true;
     }
     
     if(fertilizerLvlLow && FertilizerLevelSensor.waterPresent()) {
       currentFertilizersInTank = FERTILIZER_TANK_CAP;
       Serial.println(F("INFO: currentFertilizersInTank reset"));
+    } else if(!FertilizerLevelSensor.waterPresent()) {
+      currentFertilizersInTank = 0;
+      fertilizerLvlLow = true;
     }
     return -1;
   } else {

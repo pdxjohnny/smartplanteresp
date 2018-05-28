@@ -100,15 +100,16 @@
  *      1. Planter.h: Lines 57 & 58: Update number of waters/fertilizers
  *      
  *  Rev 1.2 05/27/2018
- *  Sketch uses 435681 bytes (41%) of program storage space. Maximum is 1044464 bytes.
+ *  Sketch uses 435777 bytes (41%) of program storage space. Maximum is 1044464 bytes.
  *  Global variables use 41304 bytes (50%) of dynamic memory, leaving 40616 bytes for local variables. Maximum is 81920 bytes.
  *    Sumamry:
  *      1. Saved WiFi credential in sleepMemory to allow the planter to be reconnected after power loss
  *      2. Reads constant strings from flash to prevent memory saturation
- *      3. Added freeMemory() function to observe amount of free memory
+ *      3. Added freeMemory() function to observe memory usage
  *      4. Statically allocates json buffer to prevent memory saturation
  *      5. Moisture lower bound in vacation mode will in the range of [moistureLowerBound, moistureLowerBound/2]
  *      6. Removed WiFimanager in wakeup() to prevent token from being overwritten (v 1.2.1)
+ *      7. Reads water levels before return from water() when there is moisture error (v1.2.2)
  *      
  *    Todo:
  *      1. Planter.h: Lines 57 & 58: Update number of waters/fertilizers
@@ -181,22 +182,18 @@ void loop()
     sendServerUpdatedJSON(false);
     //saveData();
     configSinceLastUpdate = 0;
-
-    Serial.print(F("freeMemory()="));
-    Serial.println(freeMemory());
   }
   configSinceLastUpdate += 1;
 
   /* Delay */
-  //WiFi.disconnect(true);
-  //Serial.print(F("freeMemory()="));
-  //Serial.println(freeMemory());
+  Serial.print(F("freeMemory() = "));
+  Serial.println(freeMemory());
   Serial.print(F("Sleeping for: "));
   if (sleepMemory.demoMode) {
     Serial.println(sleepMemory.demoFrequency);
     delay(sleepMemory.demoFrequency*1e3);
   } else {
     Serial.println(F("30 minutes"));
-    delay(1*1e3);
+    delay(30*60*1e3);
   }
 }
