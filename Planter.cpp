@@ -130,6 +130,7 @@ int Planter::water() {
   /* Diagnostic */
   if(moisture == MoistureSensor.getMoisture() && MoistureSensor.getMoisture() == 0) {
     moistureError = true;
+    light = LightSensor.getIntensity();
     Serial.println(F("ERROR: Moisture sensor"));
     Serial.println(F("******************************Water Exit******************************"));
     /* currentWatersInTank & currentFertilizersInTank Reset */
