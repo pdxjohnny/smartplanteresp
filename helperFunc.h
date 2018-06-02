@@ -22,7 +22,7 @@
 #define fingerprint "05 89 14 F6 C4 D3 4F F5 6B 03 3C 92 7C FD 08 A5 14 82 98 1D"
 #define host "web.cecs.pdx.edu"
 #define httpsPort 443
-#define url "/~kuanju/smartplanter/api/sync/"
+#define url "/~jsa3/smartplanter/api/sync/"
 
 extern nvmData sleepMemory;
 extern Planter Planter;
