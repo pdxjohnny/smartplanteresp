@@ -54,8 +54,8 @@
 #define PHOTORESISTOR_SEL   0 // not used
 
 #define DEFAULT_LOWER_BOUND 40
-#define WATER_TANK_CAP      22 // TODO
-#define FERTILIZER_TANK_CAP 12 // TODO
+#define WATER_TANK_CAP      19
+#define FERTILIZER_TANK_CAP 11
 
 // nvmData is used to check the validity of memory
 typedef struct {
