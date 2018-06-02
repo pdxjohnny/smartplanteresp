@@ -1,7 +1,7 @@
 /*
  * File: planterMain.ino
- * Rev:  1.2.3
- * Date: 05/28/2018
+ * Rev:  1.2.4
+ * Date: 06/02/2018
  * 
  * Portland State University ECE Capstone Project
  * IoT-Based Smart Planter
@@ -111,6 +111,7 @@
  *      6. Removed WiFimanager in wakeup() to prevent token from being overwritten (v 1.2.1)
  *      7. Reads water levels before return from water() when there is moisture error (v 1.2.2)
  *      8. Added default configuration if not able to fetch from server (v 1.2.3)
+ *      9. Updated some defined values to match to pot design (v 1.2.4)
  *      
  *    Todo:
  *      1. Planter.h: Lines 57 & 58: Update number of waters/fertilizers
@@ -120,7 +121,7 @@
 #include "helperFunc.h"
 #include "MemoryFree.h"
 
-#define VERSION "1.2.3"
+#define VERSION "1.2.4"
 nvmData sleepMemory;
 class Planter Planter;
 //WiFiManager wifiManager;
