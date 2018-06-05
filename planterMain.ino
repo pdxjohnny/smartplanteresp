@@ -111,10 +111,7 @@
  *      6. Removed WiFimanager in wakeup() to prevent token from being overwritten (v 1.2.1)
  *      7. Reads water levels before return from water() when there is moisture error (v 1.2.2)
  *      8. Added default configuration if not able to fetch from server (v 1.2.3)
- *      9. Updated some defined values to match to pot design (v 1.2.4)
- *      
- *    Todo:
- *      1. Planter.h: Lines 57 & 58: Update number of waters/fertilizers
+ *      9. Updated WATER_TANK_CAP, FERTILIZER_TANK_CAP, and DISPENCE_ONE_FERTILIZER_TIME to match to pot design (v 1.2.4)
  *  
  */
  
@@ -182,7 +179,6 @@ void loop()
     Serial.println(F("Time to get updates"));
     getConfiguration();
     sendServerUpdatedJSON(false);
-    //saveData();
     configSinceLastUpdate = 0;
   }
   configSinceLastUpdate += 1;
