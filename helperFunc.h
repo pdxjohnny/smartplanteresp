@@ -1,7 +1,7 @@
 /*
  * File: helperFunc.h
- * Rev:  1.2.3
- * Date: 05/28/2018
+ * Rev:  1.2.4
+ * Date: 06/02/2018
  * Description: 
  * 
  * Portland State University ECE Capstone Project
@@ -27,7 +27,6 @@
 extern nvmData sleepMemory;
 extern Planter Planter;
 extern StaticJsonBuffer<1500> jsonBuffer;
-//extern WiFiManager wifiManager;
 
 void saveData();
 int readData();

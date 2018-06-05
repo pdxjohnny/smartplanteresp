@@ -1,6 +1,6 @@
 /*
  * File: light.cpp
- * Rev:  0.9
+ * Rev:  1.0
  * Date: 05/09/2018
  * Description: 
  *  It currently supports two mux select lines. If 
@@ -51,5 +51,5 @@ int Light::getIntensity() {
   int voltage = analogRead(A0);
   
 	// return light intensity in integer
-  return voltage; // TODO: convert voltage into light intensity (lux)
+  return voltage;
 }

@@ -1,7 +1,7 @@
 /*
  * File: helperFunc.cpp
- * Rev:  1.2.3
- * Date: 05/28/2018
+ * Rev:  1.2.4
+ * Date: 06/02/2018
  * 
  * Portland State University ECE Capstone Project
  * IoT-Based Smart Planter
@@ -238,17 +238,17 @@ void getConfiguration() {
     return;
   }
   bool vacationMode = root[F("vacationMode")]; // true
-  int vacationModeLength = root[F("vacationModeLength")]; // 2
-  bool useFeritizer = root[F("useFeritizer")]; // true
-  int moistureLowerBound = root[F("moistureLowerBound")]; // 20
-  int daysBetweenWaters = root[F("daysBetweenWaters")]; // 7
-  int numberWatersInTank = root[F("numberWatersInTank")]; // 16
-  int currentWatersInTank = root[F("currentWatersInTank")]; // 16
-  int numberPumpRunsPerWater = root[F("numberPumpRunsPerWater")]; // 1
-  int numberFertilizersInTank = root[F("numberFertilizersInTank")]; // 8
-  int currentFertilizersInTank = root[F("currentFertilizersInTank")]; // 8
-  sleepMemory.demoMode = root[F("demoMode")]; // false
-  sleepMemory.demoFrequency = root[F("demoFrequency")]; // 30 (seconds)
+  int vacationModeLength = root[F("vacationModeLength")];
+  bool useFeritizer = root[F("useFeritizer")];
+  int moistureLowerBound = root[F("moistureLowerBound")];
+  int daysBetweenWaters = root[F("daysBetweenWaters")];
+  int numberWatersInTank = root[F("numberWatersInTank")];
+  int currentWatersInTank = root[F("currentWatersInTank")];
+  int numberPumpRunsPerWater = root[F("numberPumpRunsPerWater")];
+  int numberFertilizersInTank = root[F("numberFertilizersInTank")];
+  int currentFertilizersInTank = root[F("currentFertilizersInTank")];
+  sleepMemory.demoMode = root[F("demoMode")];
+  sleepMemory.demoFrequency = root[F("demoFrequency")];
 
   // Fetch values.
   //
@@ -432,8 +432,6 @@ String getTime(){
 void wificonnect() {
   int timeoutCnt;
   if(WiFi.status() != WL_CONNECTED) {
-    //Serial.println(SSIDArr);
-    //Serial.println(PASSArr);
     Serial.print("WiFi is not connected. Attempting to connect");
 
     timeoutCnt = 0;

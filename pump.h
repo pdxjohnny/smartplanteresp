@@ -1,7 +1,7 @@
 /*
  * File: pump.h
- * Rev:  1.0
- * Date: 05/09/2018
+ * Rev:  1.1
+ * Date: 06/02/2018
  * Description: 
  *  This is not currently in use due to lack of pins.
  *  It currently supports two mux select lines. If 
