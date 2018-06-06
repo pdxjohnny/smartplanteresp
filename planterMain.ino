@@ -1,7 +1,7 @@
 /*
  * File: planterMain.ino
- * Rev:  1.2.4
- * Date: 06/02/2018
+ * Rev:  1.2.5
+ * Date: 06/05/2018
  * 
  * Portland State University ECE Capstone Project
  * IoT-Based Smart Planter
@@ -112,13 +112,14 @@
  *      7. Reads water levels before return from water() when there is moisture error (v 1.2.2)
  *      8. Added default configuration if not able to fetch from server (v 1.2.3)
  *      9. Updated WATER_TANK_CAP, FERTILIZER_TANK_CAP, and DISPENCE_ONE_FERTILIZER_TIME to match to pot design (v 1.2.4)
+ *      10. Reset configSinceLastUpdate counter everytime data is exchanged, i.e. after watering and moistureError (v 1.2.5)
  *  
  */
  
 #include "helperFunc.h"
 #include "MemoryFree.h"
 
-#define VERSION "1.2.4"
+#define VERSION "1.2.5"
 nvmData sleepMemory;
 class Planter Planter;
 //WiFiManager wifiManager;
@@ -167,11 +168,13 @@ void loop()
     getConfiguration();
     if(!sendServerUpdatedJSON(true))
       Serial.println(F("send not sucess"));
+    configSinceLastUpdate = 0;
   } else if (waterStatus == -1) {
     getConfiguration();
     Serial.println(F("moisture error. notify server"));
     if(!sendServerUpdatedJSON(false))
       Serial.println(F("send not sucess"));
+    configSinceLastUpdate = 0;
   }
   
   /* Server Communication*/
